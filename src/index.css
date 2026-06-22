@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-brand-dark text-gray-200 antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+.theme-light {
+  color: #0f172a;
+}
+
+.theme-light.bg-brand-dark,
+.theme-light .bg-brand-dark {
+  background-color: #f7f8fb;
+}
+
+.theme-light .bg-brand-dark\/90 {
+  background-color: rgb(247 248 251 / 0.9);
+}
+
+.theme-light .bg-brand-card {
+  background-color: #ffffff;
+}
+
+.theme-light .bg-brand-border {
+  background-color: #e5e7eb;
+}
+
+.theme-light .border-brand-border {
+  border-color: #e5e7eb;
+}
+
+.theme-light .text-white,
+.theme-light .text-gray-200,
+.theme-light .text-gray-300 {
+  color: #0f172a;
+}
+
+.theme-light .text-gray-400,
+.theme-light .text-gray-500 {
+  color: #64748b;
+}
+
+.theme-light .text-gray-600 {
+  color: #475569;
+}
+
+.theme-light .text-gray-700 {
+  color: #64748b;
+}
+
+.theme-light input,
+.theme-light textarea {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+.theme-light .shadow-2xl,
+.theme-light .shadow-xl {
+  box-shadow: 0 18px 45px rgb(15 23 42 / 0.08);
+}
+
+.theme-light .bg-brand-azure.text-white,
+.theme-light .bg-brand-red.text-white,
+.theme-light .bg-\[\#5865F2\].text-white {
+  color: #ffffff;
+}
+
+.theme-light .theme-preserve-contrast .text-white,
+.theme-light .theme-preserve-contrast .text-gray-400 {
+  color: #ffffff;
+}
+
+.theme-light .theme-preserve-contrast .from-brand-dark {
+  --tw-gradient-from: #050608 var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(5 6 8 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-brand-dark;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-brand-border rounded-full hover:bg-gray-600 transition-colors;
+}
