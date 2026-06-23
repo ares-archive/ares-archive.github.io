@@ -15,9 +15,8 @@ const DiscordCallback = () => {
       }
 
       try {
-        // NOTA: Se l'API non è ospitata su GitHub Pages (impossibile), qui devi mettere l'URL assoluto 
-        // del tuo worker/server (es. 'https://tuo-worker.cloudflare.workers.dev/api/discord-login')
-        const response = await fetch('/api/discord-login', {
+        // Configurato l'URL assoluto che punta direttamente alle funzioni su Cloudflare Pages
+        const response = await fetch('https://29308194.ares-2mf.pages.dev/api/discord-login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
