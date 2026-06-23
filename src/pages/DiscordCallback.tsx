@@ -15,8 +15,8 @@ const DiscordCallback = () => {
       }
 
       try {
-        // Configurato l'URL assoluto che punta direttamente alle funzioni su Cloudflare Pages
-        const response = await fetch('https://29308194.ares-2mf.pages.dev/api/discord-login', {
+        // Configurato l'URL di produzione fisso su Cloudflare Pages (non scade mai!)
+        const response = await fetch('https://ares-2mf.pages.dev/api/discord-login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
