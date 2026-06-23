@@ -89,8 +89,8 @@ const AdminDashboard = () => {
         releaseDate: dbGame.release_date || '', 
         isUpcoming: dbGame.is_upcoming || false, 
         steamUrl: dbGame.steam_url || '',
-        gogUrl: dbGame.gog_url || '',
-        epicUrl: dbGame.epic_url || '',
+        gogUrl: dbGame.gogUrl || '',
+        epicUrl: dbGame.epicUrl || '',
         tags: ['New'],
         genres: dbGame.genre ? [dbGame.genre] : [], 
         platforms: ['windows'],
@@ -391,7 +391,7 @@ const AdminDashboard = () => {
           className="flex items-center gap-2 px-4 py-2 bg-brand-red/10 hover:bg-brand-red text-brand-red hover:text-white text-xs font-bold rounded-lg transition-all uppercase tracking-wider"
         >
           <LogOut className="w-4 h-4" />
-          <Logout
+          Logout
         </button>
       </div>
 
