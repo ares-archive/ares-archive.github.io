@@ -238,26 +238,30 @@ const AdminDashboard = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // FUNZIONE AGGIORNATA CON CORREZIONE ERRORE 400 (Bad Request)
   const handleSaveGame = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Gestione Genere: se vuoto, forziamo null per evitare conflitti su Postgres
     const singleGenreString = activeGame.genres && activeGame.genres.length > 0 
       ? activeGame.genres[0] 
-      : '';
+      : null;
 
+    // Costruiamo un payload pulito convertendo stringhe vuote in null laddove necessario
     const payload = {
-      title: activeGame.title || 'Untitled Game',
+      title: activeGame.title?.trim() || 'Untitled Game',
       description: activeGame.description || '',
-      developer: activeGame.developer || '',
+      developer: activeGame.developer || null,
       pearcrypt_url: activeGame.buzzheavierLink || '', 
       banner_url: activeGame.bannerImage || '',
-      video_url: activeGame.videoUrl || '',
+      video_url: activeGame.videoUrl || null,
       screenshots: activeGame.steamScreenshots || [],
-      release_date: activeGame.releaseDate || '',
-      is_upcoming: activeGame.isUpcoming || false,
-      steam_url: activeGame.steamUrl || '',
-      gog_url: activeGame.gogUrl || '',
-      epic_url: activeGame.epicUrl || '',
+      // Se releaseDate è stringa vuota, usiamo null. Altrimenti Postgres fallisce il parsing della data
+      release_date: activeGame.releaseDate && activeGame.releaseDate.trim() !== '' ? activeGame.releaseDate : null,
+      is_upcoming: !!activeGame.isUpcoming,
+      steam_url: activeGame.steamUrl || null,
+      gog_url: activeGame.gogUrl || null,
+      epic_url: activeGame.epicUrl || null,
       genre: singleGenreString 
     };
 
@@ -267,8 +271,14 @@ const AdminDashboard = () => {
         .update(payload)
         .eq('id', editingId);
         
-      if (error) alert("Errore durante la modifica!");
-      else alert("Modifica salvata con successo!");
+      if (error) {
+        console.error("Errore Supabase in UPDATE:", error);
+        alert(`Errore durante la modifica: ${error.message}\nControlla che la colonna 'genre' esista nel DB.`);
+      } else {
+        alert("Modifica salvata con successo!");
+        fetchGames();
+        resetForm();
+      }
     } else {
       const { error } = await supabase
         .from('games')
@@ -276,15 +286,14 @@ const AdminDashboard = () => {
         .select();
 
       if (error) {
-        console.error(error);
-        alert("Errore durante il salvataggio! Controlla la console.");
+        console.error("Errore Supabase in INSERT:", error);
+        alert(`Errore durante il salvataggio: ${error.message}`);
       } else {
         alert("Gioco aggiunto con successo!");
+        fetchGames();
+        resetForm();
       }
     }
-
-    fetchGames();
-    resetForm();
   };
 
   const handleDeleteGame = async (id: string) => {
@@ -382,7 +391,7 @@ const AdminDashboard = () => {
           className="flex items-center gap-2 px-4 py-2 bg-brand-red/10 hover:bg-brand-red text-brand-red hover:text-white text-xs font-bold rounded-lg transition-all uppercase tracking-wider"
         >
           <LogOut className="w-4 h-4" />
-          Logout
+          <Logout
         </button>
       </div>
 
