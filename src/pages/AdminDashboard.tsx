@@ -8,7 +8,7 @@ const emptyGame: Partial<Game> = {
   title: '',
   description: '',
   developer: '',
-  buzzheavierLink: '', // Migrato a Buzzheavier
+  buzzheavierLink: '', 
   bannerImage: '',
   steamScreenshots: [],
   videoUrl: '',
@@ -82,7 +82,7 @@ const AdminDashboard = () => {
         title: dbGame.title || '',
         description: dbGame.description || '',
         developer: dbGame.developer || '',
-        buzzheavierLink: dbGame.pearcrypt_url || '', // Mappato su pearcrypt_url nel DB per retrocompatibilità
+        buzzheavierLink: dbGame.pearcrypt_url || '', 
         bannerImage: dbGame.banner_url || '',
         videoUrl: dbGame.video_url || '',
         steamScreenshots: dbGame.screenshots || [],
@@ -92,22 +92,20 @@ const AdminDashboard = () => {
         gogUrl: dbGame.gog_url || '',
         epicUrl: dbGame.epic_url || '',
         tags: ['New'],
-        genres: dbGame.genre ? [dbGame.genre] : [], // Gestione array locale per compatibilità con filtri frontend
+        genres: dbGame.genre ? [dbGame.genre] : [], 
         platforms: ['windows'],
       }));
       setGames(mappedGames);
     }
   };
 
-  // Funzione helper interna per estrarre il genere ufficiale tramite lo Steam App ID
+  // RILEVAMENTO GENERE AUTOMATICO: Corretta la Regex eliminando '\Client'
   const fetchGenreFromSteam = async (steamUrl: string): Promise<string[]> => {
     try {
-      // Estraiamo l'ID numerico dall'URL (es: store.steampowered.com/app/123456/...)
-      const match = steamUrl.match(/\/app\/(\Clientd+)/);
+      const match = steamUrl.match(/\/app\/(\d+)/);
       if (!match) return [];
       
       const steamId = match[1];
-      // Utilizziamo l'endpoint di proxy per evitare blocchi CORS locali
       const response = await fetch(`https://store.steampowered.com/api/appdetails?appids=${steamId}&l=italian`);
       if (!response.ok) return [];
 
@@ -117,14 +115,12 @@ const AdminDashboard = () => {
       const steamGenres = data[steamId].data.genres as { id: string; description: string }[];
       const primaryGenre = steamGenres[0].description.toLowerCase();
 
-      // Mapping testuale esatto basato sui tuoi filtri di selezione (All, Action, Adventure, RPG, Indie, Strategy)
       if (primaryGenre.includes('azion') || primaryGenre.includes('action')) return ['Action'];
       if (primaryGenre.includes('avventur') || primaryGenre.includes('adventure')) return ['Adventure'];
       if (primaryGenre.includes('rpg') || primaryGenre.includes('ruolo') || primaryGenre.includes('role')) return ['RPG'];
       if (primaryGenre.includes('indie')) return ['Indie'];
       if (primaryGenre.includes('strateg') || primaryGenre.includes('strategy')) return ['Strategy'];
 
-      // Controllo di riserva se la prima voce non corrisponde ma "Indie" compare nella lista secondaria
       if (steamGenres.some(g => g.description.toLowerCase().includes('indie'))) return ['Indie'];
       
       return [];
@@ -180,7 +176,6 @@ const AdminDashboard = () => {
         });
       }
 
-      // Eseguiamo il rilevamento automatico del genere tramite l'ID di Steam ricavato
       let autoGenres: string[] = [];
       if (steamLink) {
         autoGenres = await fetchGenreFromSteam(steamLink);
@@ -220,11 +215,22 @@ const AdminDashboard = () => {
     setScreenshotInput('');
   };
 
+  // MODIFICA GIOCO: Allineati i campi per fare in modo che la matita popoli tutto il form correttamente
   const handleEditGame = (game: Game) => {
     setEditingId(game.id);
     setActiveGame({
-      ...game,
+      title: game.title,
+      description: game.description,
+      developer: game.developer,
+      buzzheavierLink: game.buzzheavierLink,
+      bannerImage: game.bannerImage,
+      videoUrl: game.videoUrl,
       steamScreenshots: [...(game.steamScreenshots || [])],
+      releaseDate: game.releaseDate,
+      isUpcoming: game.isUpcoming,
+      steamUrl: game.steamUrl,
+      gogUrl: game.gogUrl,
+      epicUrl: game.epicUrl,
       tags: [...(game.tags || [])],
       genres: [...(game.genres || [])],
       platforms: [...(game.platforms || [])]
@@ -235,7 +241,6 @@ const AdminDashboard = () => {
   const handleSaveGame = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Estraiamo il genere come stringa singola per salvarla nella colonna di Supabase
     const singleGenreString = activeGame.genres && activeGame.genres.length > 0 
       ? activeGame.genres[0] 
       : '';
@@ -244,7 +249,7 @@ const AdminDashboard = () => {
       title: activeGame.title || 'Untitled Game',
       description: activeGame.description || '',
       developer: activeGame.developer || '',
-      pearcrypt_url: activeGame.buzzheavierLink || '', // Inserisce nella colonna originaria di Supabase
+      pearcrypt_url: activeGame.buzzheavierLink || '', 
       banner_url: activeGame.bannerImage || '',
       video_url: activeGame.videoUrl || '',
       screenshots: activeGame.steamScreenshots || [],
@@ -252,8 +257,8 @@ const AdminDashboard = () => {
       is_upcoming: activeGame.isUpcoming || false,
       steam_url: activeGame.steamUrl || '',
       gog_url: activeGame.gogUrl || '',
-      epic_url: activeGame.epic_url || '',
-      genre: singleGenreString // Salva il genere testuale pulito per far funzionare i filtri del selettore
+      epic_url: activeGame.epicUrl || '',
+      genre: singleGenreString 
     };
 
     if (editingId) {
@@ -416,7 +421,7 @@ const AdminDashboard = () => {
                 </button>
               </div>
 
-              {/* Selettore Manuale del Genere (Visibile come feedback dell'Autofill o per modifiche veloci) */}
+              {/* Selettore Genere */}
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest pl-1">
                   Selected Genre
@@ -474,7 +479,6 @@ const AdminDashboard = () => {
                 />
               </div>
 
-              {/* Sezione Aggiornata per Buzzheavier */}
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest pl-1">
                   Game Link (Buzzheavier)
