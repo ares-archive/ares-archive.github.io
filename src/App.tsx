@@ -24,7 +24,8 @@ function App() {
   }, [isDark]);
 
   return (
-    <Router>
+    // Aggiunto basename="/ares-src" così il router sa di essere dentro la sottocartella di GitHub Pages
+    <Router basename="/ares-src">
       <div className={`min-h-screen bg-brand-dark text-white selection:bg-brand-azure selection:text-white ${isDark ? 'theme-dark' : 'theme-light'}`}>
         <Header onSearch={setSearchQuery} isDark={isDark} onToggleTheme={() => setIsDark(value => !value)} />
         <main className="min-h-[80vh]">
