@@ -15,12 +15,15 @@ const DiscordCallback = () => {
       }
 
       try {
+        // NOTA: Se l'API non è ospitata su GitHub Pages (impossibile), qui devi mettere l'URL assoluto 
+        // del tuo worker/server (es. 'https://tuo-worker.cloudflare.workers.dev/api/discord-login')
         const response = await fetch('/api/discord-login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             code,
-            redirect_uri: `${window.location.origin}/discord-callback`
+            // Forziamo l'indirizzo esatto registrato sul pannello sviluppatori di Discord
+            redirect_uri: "https://ares-archive.github.io/discord-callback"
           })
         });
 
@@ -29,7 +32,7 @@ const DiscordCallback = () => {
           // 1. Salviamo i dati
           localStorage.setItem('ares_discord_user', JSON.stringify(user));
           
-          // 2. Inviamo un evento personalizzato per svegliare l'Header all'istante [2]
+          // 2. Inviamo un evento personalizzato per svegliare l'Header all'istante
           window.dispatchEvent(new Event('ares-discord-login'));
         } else {
           console.error("Errore durante l'autenticazione con il server.");
