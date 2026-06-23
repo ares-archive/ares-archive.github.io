@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  base: '/ares-src/', // <--- Aggiunto per far caricare gli asset su GitHub Pages
+  base: '/', // <--- Modificato da '/ares-src/' a '/' per il nuovo dominio root dell'organizzazione
   plugins: [react({ babel: { plugins: [
 function __dualiteSourceLoc({ types: t }) {
   return { visitor: { JSXOpeningElement(path, state) {
