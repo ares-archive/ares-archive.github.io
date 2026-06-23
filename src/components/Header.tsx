@@ -24,7 +24,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleTheme 
 
     loadUser(); // Carica l'utente all'avvio del sito
 
-    // Resta in ascolto dell'evento di login immediato [2]
+    // Resta in ascolto dell'evento di login immediato
     window.addEventListener('ares-discord-login', loadUser);
 
     // Pulisce l'evento quando il componente viene smontato
@@ -34,9 +34,8 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleTheme 
   }, []);
 
   const handleDiscordConnect = () => {
-    const clientId = '1518053081919520799'; // <-- Ricordati di rimettere il tuo Client ID!
-    const redirectUri = encodeURIComponent(window.location.origin + '/discord-callback');
-    window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=identify`;
+    // Inserito il link ufficiale generato da Discord per l'organizzazione ares-archive
+    window.location.href = "https://discord.com/oauth2/authorize?client_id=1518053081919520799&response_type=code&redirect_uri=https%3A%2F%2Fares-archive.github.io%2Fdiscord-callback&scope=identify";
   };
 
   const handleLogout = () => {
