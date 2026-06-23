@@ -92,10 +92,45 @@ const AdminDashboard = () => {
         gogUrl: dbGame.gog_url || '',
         epicUrl: dbGame.epic_url || '',
         tags: ['New'],
-        genres: [],
+        genres: dbGame.genre ? [dbGame.genre] : [], // Gestione array locale per compatibilità con filtri frontend
         platforms: ['windows'],
       }));
       setGames(mappedGames);
+    }
+  };
+
+  // Funzione helper interna per estrarre il genere ufficiale tramite lo Steam App ID
+  const fetchGenreFromSteam = async (steamUrl: string): Promise<string[]> => {
+    try {
+      // Estraiamo l'ID numerico dall'URL (es: store.steampowered.com/app/123456/...)
+      const match = steamUrl.match(/\/app\/(\Clientd+)/);
+      if (!match) return [];
+      
+      const steamId = match[1];
+      // Utilizziamo l'endpoint di proxy per evitare blocchi CORS locali
+      const response = await fetch(`https://store.steampowered.com/api/appdetails?appids=${steamId}&l=italian`);
+      if (!response.ok) return [];
+
+      const data = await response.json() as any;
+      if (!data[steamId] || !data[steamId].success || !data[steamId].data.genres) return [];
+
+      const steamGenres = data[steamId].data.genres as { id: string; description: string }[];
+      const primaryGenre = steamGenres[0].description.toLowerCase();
+
+      // Mapping testuale esatto basato sui tuoi filtri di selezione (All, Action, Adventure, RPG, Indie, Strategy)
+      if (primaryGenre.includes('azion') || primaryGenre.includes('action')) return ['Action'];
+      if (primaryGenre.includes('avventur') || primaryGenre.includes('adventure')) return ['Adventure'];
+      if (primaryGenre.includes('rpg') || primaryGenre.includes('ruolo') || primaryGenre.includes('role')) return ['RPG'];
+      if (primaryGenre.includes('indie')) return ['Indie'];
+      if (primaryGenre.includes('strateg') || primaryGenre.includes('strategy')) return ['Strategy'];
+
+      // Controllo di riserva se la prima voce non corrisponde ma "Indie" compare nella lista secondaria
+      if (steamGenres.some(g => g.description.toLowerCase().includes('indie'))) return ['Indie'];
+      
+      return [];
+    } catch (err) {
+      console.error("Impossibile recuperare il genere da Steam:", err);
+      return [];
     }
   };
 
@@ -145,6 +180,12 @@ const AdminDashboard = () => {
         });
       }
 
+      // Eseguiamo il rilevamento automatico del genere tramite l'ID di Steam ricavato
+      let autoGenres: string[] = [];
+      if (steamLink) {
+        autoGenres = await fetchGenreFromSteam(steamLink);
+      }
+
       setActiveGame(prev => ({
         ...prev,
         title: foundGame.name || prev.title,
@@ -155,14 +196,19 @@ const AdminDashboard = () => {
         steamScreenshots: screenshotsUrls.length > 0 ? screenshotsUrls : prev.steamScreenshots,
         steamUrl: steamLink,
         gogUrl: gogLink,
-        epicUrl: epicLink
+        epicUrl: epicLink,
+        genres: autoGenres.length > 0 ? autoGenres : prev.genres
       }));
 
-      alert(`Dati, screenshot e link agli Store ufficiali di "${foundGame.name}" scaricati da RAWG!`);
+      if (autoGenres.length > 0) {
+        alert(`Dati, screenshot, link store e Genere rilevato automaticamente ("${autoGenres[0]}") caricati con successo!`);
+      } else {
+        alert(`Dati, screenshot e link agli Store ufficiali di "${foundGame.name}" scaricati da RAWG! (Genere non rilevato, impostalo manualmente).`);
+      }
 
     } catch (err) {
-      console.error("Errore RAWG:", err);
-      alert("Errore durante il collegamento con l'API di RAWG.");
+      console.error("Errore RAWG/Steam Sync:", err);
+      alert("Errore durante il collegamento o l'elaborazione dei dati.");
     } finally {
       setFetchingRawg(false);
     }
@@ -189,6 +235,11 @@ const AdminDashboard = () => {
   const handleSaveGame = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Estraiamo il genere come stringa singola per salvarla nella colonna di Supabase
+    const singleGenreString = activeGame.genres && activeGame.genres.length > 0 
+      ? activeGame.genres[0] 
+      : '';
+
     const payload = {
       title: activeGame.title || 'Untitled Game',
       description: activeGame.description || '',
@@ -201,7 +252,8 @@ const AdminDashboard = () => {
       is_upcoming: activeGame.isUpcoming || false,
       steam_url: activeGame.steamUrl || '',
       gog_url: activeGame.gogUrl || '',
-      epic_url: activeGame.epicUrl || ''
+      epic_url: activeGame.epic_url || '',
+      genre: singleGenreString // Salva il genere testuale pulito per far funzionare i filtri del selettore
     };
 
     if (editingId) {
@@ -213,7 +265,7 @@ const AdminDashboard = () => {
       if (error) alert("Errore durante la modifica!");
       else alert("Modifica salvata con successo!");
     } else {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('games')
         .insert([payload])
         .select();
@@ -357,11 +409,30 @@ const AdminDashboard = () => {
                   onClick={handleFetchRawgData}
                   disabled={fetchingRawg}
                   className="px-4 bg-brand-azure hover:brightness-110 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
-                  title="Scarica dati e immagini automaticamente da RAWG"
+                  title="Scarica dati, immagini e genere automaticamente da RAWG e Steam"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   {fetchingRawg ? 'Fetching...' : 'Autofill'}
                 </button>
+              </div>
+
+              {/* Selettore Manuale del Genere (Visibile come feedback dell'Autofill o per modifiche veloci) */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest pl-1">
+                  Selected Genre
+                </label>
+                <select
+                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-azure cursor-pointer"
+                  value={activeGame.genres && activeGame.genres.length > 0 ? activeGame.genres[0] : ''}
+                  onChange={e => setActiveGame({...activeGame, genres: e.target.value ? [e.target.value] : []})}
+                >
+                  <option value="">No Genre Selected (All)</option>
+                  <option value="Action">Action</option>
+                  <option value="Adventure">Adventure</option>
+                  <option value="RPG">RPG</option>
+                  <option value="Indie">Indie</option>
+                  <option value="Strategy">Strategy</option>
+                </select>
               </div>
 
               <textarea 
@@ -545,6 +616,11 @@ const AdminDashboard = () => {
                     <div className="flex gap-3 mt-1">
                       <span className="text-[10px] text-gray-500">{game.steamScreenshots?.length || 0} Screenshots</span>
                       {game.videoUrl && <span className="text-[10px] text-brand-azure font-bold">VIDEO ACTIVE</span>}
+                      {game.genres && game.genres.length > 0 && (
+                        <span className="text-[10px] bg-brand-dark border border-brand-border text-gray-400 px-2 rounded uppercase font-black tracking-wider">
+                          {game.genres[0]}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
