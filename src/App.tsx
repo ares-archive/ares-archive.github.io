@@ -64,6 +64,14 @@ function App() {
                 >
                   Discord
                 </a>
+                <a 
+                  href="https://ko-fi.com/aresarchive" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:text-[#FF5E5B] transition-colors"
+                >
+                  Ko-fi
+                </a>
               </div>
 
               <p className="text-gray-700 text-[10px] font-bold uppercase tracking-widest">
