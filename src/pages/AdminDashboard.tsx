@@ -22,6 +22,27 @@ const emptyGame: Partial<Game> = {
   platforms: ['windows']
 };
 
+// Lista completa di tutti i generi gestiti dall'ecosistema ARES
+const AVAILABLE_GENRES = [
+  "Action",
+  "Adventure",
+  "RPG",
+  "Strategy",
+  "Shooter",
+  "Simulation",
+  "Survival",
+  "Horror",
+  "Platformer",
+  "Racing",
+  "Sports",
+  "Fighting",
+  "Indie",
+  "Puzzle",
+  "Preservation",
+  "Emulator",
+  "Crack/Bypass"
+];
+
 const AdminDashboard = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [session, setSession] = useState<Session | null>(null);
@@ -99,7 +120,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // RILEVAMENTO GENERE AUTOMATICO: Corretta la Regex eliminando '\Client'
+  // RILEVAMENTO GENERE AUTOMATICO POTENZIATO
   const fetchGenreFromSteam = async (steamUrl: string): Promise<string[]> => {
     try {
       const match = steamUrl.match(/\/app\/(\d+)/);
@@ -113,13 +134,23 @@ const AdminDashboard = () => {
       if (!data[steamId] || !data[steamId].success || !data[steamId].data.genres) return [];
 
       const steamGenres = data[steamId].data.genres as { id: string; description: string }[];
-      const primaryGenre = steamGenres[0].description.toLowerCase();
-
-      if (primaryGenre.includes('azion') || primaryGenre.includes('action')) return ['Action'];
-      if (primaryGenre.includes('avventur') || primaryGenre.includes('adventure')) return ['Adventure'];
-      if (primaryGenre.includes('rpg') || primaryGenre.includes('ruolo') || primaryGenre.includes('role')) return ['RPG'];
-      if (primaryGenre.includes('indie')) return ['Indie'];
-      if (primaryGenre.includes('strateg') || primaryGenre.includes('strategy')) return ['Strategy'];
+      
+      // Controlliamo i generi combinando la stringa principale e quelle secondarie
+      for (const g of steamGenres) {
+        const desc = g.description.toLowerCase();
+        if (desc.includes('horror')) return ['Horror'];
+        if (desc.includes('survival') || desc.includes('sopravvivenza')) return ['Survival'];
+        if (desc.includes('rpg') || desc.includes('ruolo') || desc.includes('role')) return ['RPG'];
+        if (desc.includes('strateg') || desc.includes('strategy')) return ['Strategy'];
+        if (desc.includes('corsa') || desc.includes('racing') || desc.includes('automobilismo')) return ['Racing'];
+        if (desc.includes('sport')) return ['Sports'];
+        if (desc.includes('combattimento') || desc.includes('fighting')) return ['Fighting'];
+        if (desc.includes('simulaz') || desc.includes('simulation')) return ['Simulation'];
+        if (desc.includes('rompicapo') || desc.includes('puzzle')) return ['Puzzle'];
+        if (desc.includes('platform') || desc.includes('piattaforme')) return ['Platformer'];
+        if (desc.includes('azion') || desc.includes('action') || desc.includes('sparatutto') || desc.includes('shooter')) return ['Action'];
+        if (desc.includes('avventur') || desc.includes('adventure')) return ['Adventure'];
+      }
 
       if (steamGenres.some(g => g.description.toLowerCase().includes('indie'))) return ['Indie'];
       
@@ -181,6 +212,23 @@ const AdminDashboard = () => {
         autoGenres = await fetchGenreFromSteam(steamLink);
       }
 
+      // Se non trovato da Steam, proviamo una mappatura veloce da RAWG
+      if (autoGenres.length === 0 && foundGame.genres && foundGame.genres.length > 0) {
+        const rawgGenre = foundGame.genres[0].name.toLowerCase();
+        if (rawgGenre.includes('action')) autoGenres = ['Action'];
+        else if (rawgGenre.includes('adventure')) autoGenres = ['Adventure'];
+        else if (rawgGenre.includes('rpg')) autoGenres = ['RPG'];
+        else if (rawgGenre.includes('strategy')) autoGenres = ['Strategy'];
+        else if (rawgGenre.includes('shooter')) autoGenres = ['Action'];
+        else if (rawgGenre.includes('puzzle')) autoGenres = ['Puzzle'];
+        else if (rawgGenre.includes('racing')) autoGenres = ['Racing'];
+        else if (rawgGenre.includes('sports')) autoGenres = ['Sports'];
+        else if (rawgGenre.includes('platformer')) autoGenres = ['Platformer'];
+        else if (rawgGenre.includes('simulation')) autoGenres = ['Simulation'];
+        else if (rawgGenre.includes('fighting')) autoGenres = ['Fighting'];
+        else if (rawgGenre.includes('indie')) autoGenres = ['Indie'];
+      }
+
       setActiveGame(prev => ({
         ...prev,
         title: foundGame.name || prev.title,
@@ -215,7 +263,6 @@ const AdminDashboard = () => {
     setScreenshotInput('');
   };
 
-  // MODIFICA GIOCO: Allineati i campi per fare in modo che la matita popoli tutto il form correttamente
   const handleEditGame = (game: Game) => {
     setEditingId(game.id);
     setActiveGame({
@@ -238,16 +285,13 @@ const AdminDashboard = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // FUNZIONE AGGIORNATA CON CORREZIONE ERRORE 400 (Bad Request)
   const handleSaveGame = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Gestione Genere: se vuoto, forziamo null per evitare conflitti su Postgres
     const singleGenreString = activeGame.genres && activeGame.genres.length > 0 
       ? activeGame.genres[0] 
       : null;
 
-    // Costruiamo un payload pulito convertendo stringhe vuote in null laddove necessario
     const payload = {
       title: activeGame.title?.trim() || 'Untitled Game',
       description: activeGame.description || '',
@@ -256,7 +300,6 @@ const AdminDashboard = () => {
       banner_url: activeGame.bannerImage || '',
       video_url: activeGame.videoUrl || null,
       screenshots: activeGame.steamScreenshots || [],
-      // Se releaseDate è stringa vuota, usiamo null. Altrimenti Postgres fallisce il parsing della data
       release_date: activeGame.releaseDate && activeGame.releaseDate.trim() !== '' ? activeGame.releaseDate : null,
       is_upcoming: !!activeGame.isUpcoming,
       steam_url: activeGame.steamUrl || null,
@@ -273,7 +316,7 @@ const AdminDashboard = () => {
         
       if (error) {
         console.error("Errore Supabase in UPDATE:", error);
-        alert(`Errore durante la modifica: ${error.message}\nControlla che la colonna 'genre' esista nel DB.`);
+        alert(`Errore durante la modifica: ${error.message}`);
       } else {
         alert("Modifica salvata con successo!");
         fetchGames();
@@ -430,7 +473,7 @@ const AdminDashboard = () => {
                 </button>
               </div>
 
-              {/* Selettore Genere */}
+              {/* Selettore Genere Aggiornato */}
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest pl-1">
                   Selected Genre
@@ -441,11 +484,9 @@ const AdminDashboard = () => {
                   onChange={e => setActiveGame({...activeGame, genres: e.target.value ? [e.target.value] : []})}
                 >
                   <option value="">No Genre Selected (All)</option>
-                  <option value="Action">Action</option>
-                  <option value="Adventure">Adventure</option>
-                  <option value="RPG">RPG</option>
-                  <option value="Indie">Indie</option>
-                  <option value="Strategy">Strategy</option>
+                  {AVAILABLE_GENRES.map((genre) => (
+                    <option key={genre} value={genre}>{genre}</option>
+                  ))}
                 </select>
               </div>
 
