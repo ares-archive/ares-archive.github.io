@@ -56,6 +56,14 @@ function App() {
                 <Link to="/legal" className="hover:text-brand-azure transition-colors">Legal</Link>
                 <Link to="/privacy" className="hover:text-brand-azure transition-colors">Privacy</Link>
                 <Link to="/about" className="hover:text-brand-azure transition-colors">About</Link>
+                <a 
+                  href="https://discord.gg/sqkxTDqqBj" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:text-[#5865F2] transition-colors"
+                >
+                  Discord
+                </a>
               </div>
 
               <p className="text-gray-700 text-[10px] font-bold uppercase tracking-widest">

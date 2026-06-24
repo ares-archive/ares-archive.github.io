@@ -8,6 +8,17 @@ interface HomeProps {
   searchQuery: string;
 }
 
+// Icona SVG ufficiale di Discord ottimizzata per l'uso inline in React
+const DiscordIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    viewBox="0 0 127.14 96.36"
+    fill="currentColor"
+    {...props}
+  >
+    <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.5-5c.87-.64,1.71-1.32,2.51-2a75.52,75.52,0,0,0,73,0c.8.71,1.64,1.39,2.51,2a68.43,68.43,0,0,1-10.5,5,77.7,77.7,0,0,0,6.63,10.85,105.73,105.73,0,0,0,31-18.83C129,50.7,122.64,27.78,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z" />
+  </svg>
+);
+
 const Home: React.FC<HomeProps> = ({ searchQuery }) => {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
@@ -116,6 +127,35 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Discord Promo Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#5865F2]/10 via-[#5865F2]/5 to-transparent border border-brand-border rounded-2xl p-6 md:p-8 mb-10 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-[#5865F2] rounded-full blur-[80px] opacity-20 pointer-events-none" />
+        
+        <div className="flex flex-col md:flex-row items-center gap-5 text-center md:text-left z-[1]">
+          <div className="p-4 bg-[#5865F2]/10 border border-[#5865F2]/20 rounded-xl text-[#5865F2] shrink-0">
+            <DiscordIcon className="w-8 h-8 fill-current" />
+          </div>
+          <div>
+            <h2 className="text-xl font-black uppercase tracking-tight text-white mb-1">
+              Join the ARES community
+            </h2>
+            <p className="text-sm text-gray-400 max-w-xl">
+              Preserve digital history with us. Access saves and details for the newest titles, receive notifications on daily updates, and seamlessly link your account via OAuth2.
+            </p>
+          </div>
+        </div>
+
+        <a
+          href="https://discord.gg/sqkxTDqqBj"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-6 py-3 bg-[#5865F2] hover:bg-[#4752C4] text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-[#5865F2]/30 hover:shadow-[#5865F2]/40 transform hover:-translate-y-0.5 active:translate-y-0 text-center z-[1] whitespace-nowrap shrink-0"
+        >
+          <DiscordIcon className="w-4 h-4 fill-current" />
+          Join Us Now
+        </a>
       </div>
 
       {displayedArchivedGames.length > 0 ? (
