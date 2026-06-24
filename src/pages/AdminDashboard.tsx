@@ -110,8 +110,8 @@ const AdminDashboard = () => {
         releaseDate: dbGame.release_date || '', 
         isUpcoming: dbGame.is_upcoming || false, 
         steamUrl: dbGame.steam_url || '',
-        gogUrl: dbGame.gogUrl || '',
-        epicUrl: dbGame.epicUrl || '',
+        gogUrl: dbGame.gog_url || '',    // <-- MODIFICATO: Corretto da gogUrl a gog_url
+        epicUrl: dbGame.epic_url || '',  // <-- MODIFICATO: Corretto da epicUrl a epic_url
         tags: ['New'],
         genres: dbGame.genre ? [dbGame.genre] : [], 
         platforms: ['windows'],
