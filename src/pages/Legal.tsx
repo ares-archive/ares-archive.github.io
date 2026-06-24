@@ -99,7 +99,7 @@ const Legal: React.FC = () => {
             </p>
             <div className="bg-brand-dark p-4 rounded-xl border border-brand-border inline-block">
               <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block">EMAIL ADDRESS</span>
-              <span className="text-brand-azure font-black font-mono text-sm md:text-base">preservation@ares-archive.dev</span>
+              <span className="text-brand-azure font-black font-mono text-sm md:text-base">ares.digital.preservation@gmail.com</span>
             </div>
             <p className="text-xs text-gray-500 italic">
               *Nota per l'amministratore: puoi sostituire questo indirizzo e-mail con il tuo indirizzo ProtonMail o con quello del tuo dominio per ricevere direttamente le richieste [1].
