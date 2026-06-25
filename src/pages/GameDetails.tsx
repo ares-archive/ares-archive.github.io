@@ -21,6 +21,29 @@ import {
 import { supabase } from '../supabase'; 
 import { Game } from '../types/game';
 
+// Icona Steam ufficiale vettoriale
+const SteamIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    viewBox="0 0 16 16"
+    fill="currentColor"
+    {...props}
+  >
+    <path d="M.329 10.333A8.01 8.01 0 0 0 7.99 16C12.414 16 16 12.418 16 8s-3.586-8-8.009-8A8.006 8.006 0 0 0 0 7.468l.003.006 4.304 1.769A2.2 2.2 0 0 1 5.62 8.88l1.96-2.844-.001-.04a3.046 3.046 0 0 1 3.042-3.043 3.046 3.046 0 0 1 3.042 3.043 3.047 3.047 0 0 1-3.111 3.044l-2.804 2a2.223 2.223 0 0 1-3.075 2.11 2.22 2.22 0 0 1-1.312-1.568L.33 10.333Z" />
+    <path d="M4.868 12.683a1.715 1.715 0 0 0 1.318-3.165 1.7 1.7 0 0 0-1.263-.02l1.023.424a1.261 1.261 0 1 1-.97 2.33l-.99-.41a1.7 1.7 0 0 0 .882.84Zm3.726-6.687a2.03 2.03 0 0 0 2.027 2.029 2.03 2.03 0 0 0 2.027-2.029 2.03 2.03 0 0 0-2.027-2.027 2.03 2.03 0 0 0-2.027 2.027m2.03-1.527a1.524 1.524 0 1 1-.002 3.048 1.524 1.524 0 0 1 .002-3.048" />
+  </svg>
+);
+
+// Icona GitHub ufficiale vettoriale per Goldberg Emulator
+const GithubIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    fill="currentColor" 
+    {...props}
+  >
+    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.162 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
+  </svg>
+);
+
 // Helper per convertire i link di YouTube nel formato embed corretto con suggerimento HD (1080p)
 const getYouTubeEmbedUrl = (url: string): string | null => {
   if (!url) return null;
@@ -111,7 +134,7 @@ const GameDetails: React.FC = () => {
           title: data.title || '',
           description: data.description || '',
           developer: data.developer || '',
-          pearcryptLink: data.pearcrypt_url || '',
+          buzzheavierLink: data.buzzheavier_url || data.pearcrypt_url || '', // Aggiornato a Buzzheavier (con fallback per sicurezza)
           bannerImage: data.banner_url || '',
           videoUrl: data.video_url || '',
           steamScreenshots: data.screenshots || [], 
@@ -442,7 +465,7 @@ const GameDetails: React.FC = () => {
                     COMING SOON
                   </button>
                 ) : (
-                  <a href={game.pearcryptLink} target="_blank" rel="noopener noreferrer" className="w-full py-6 bg-brand-azure hover:bg-brand-azure/90 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl shadow-brand-azure/20 group text-lg">
+                  <a href={game.buzzheavierLink} target="_blank" rel="noopener noreferrer" className="w-full py-6 bg-brand-azure hover:bg-brand-azure/90 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl shadow-brand-azure/20 group text-lg">
                     <Download className="w-6 h-6 group-hover:translate-y-1 transition-transform" />
                     DOWNLOAD NOW
                   </a>
@@ -456,6 +479,31 @@ const GameDetails: React.FC = () => {
                   <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest">
                     <span className="text-gray-500 flex items-center gap-2"><Code2 className="w-4 h-4" /> Developer</span>
                     <span className="text-white font-black">{game.developer}</span>
+                  </div>
+
+                  {/* PRESERVATION & EMULATION SOURCES */}
+                  <div className="pt-8 border-t border-brand-border space-y-3">
+                    <span className="text-[10px] font-black text-[#5865F2] uppercase tracking-widest block mb-2">Preservation & Emulation Sources</span>
+                    {game.steamUrl && (
+                      <a 
+                        href={game.steamUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="w-full py-3 bg-[#1b2838]/80 hover:bg-[#2a475e]/80 border border-[#2a475e]/30 text-[#66c0f4] text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider shadow-lg shadow-[#1b2838]/10 hover:shadow-[#1b2838]/20 hover:-translate-y-0.5 active:translate-y-0"
+                      >
+                        <SteamIcon className="w-4 h-4 shrink-0" />
+                        Original Steam Source
+                      </a>
+                    )}
+                    <a 
+                      href="https://github.com/Detanup01/gbe_fork" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="w-full py-3 bg-[#24292e]/80 hover:bg-[#2f363d]/80 border border-[#2f363d]/30 text-[#fafbfc] text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider shadow-lg shadow-[#24292e]/10 hover:shadow-[#24292e]/20 hover:-translate-y-0.5 active:translate-y-0"
+                    >
+                      <GithubIcon className="w-4 h-4 shrink-0" />
+                      Goldberg Emulator Fork
+                    </a>
                   </div>
 
                   {/* LINK COMMERCIALI */}
