@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, User, LogOut, Shield, Sun, Moon } from 'lucide-react';
 import { clsx } from 'clsx';
+import { motion } from 'framer-motion';
 
 interface HeaderProps {
   onSearch: (query: string) => void;
@@ -22,19 +23,15 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleTheme 
       if (user) setDiscordUser(JSON.parse(user));
     };
 
-    loadUser(); // Carica l'utente all'avvio del sito
-
-    // Resta in ascolto dell'evento di login immediato
+    loadUser();
     window.addEventListener('ares-discord-login', loadUser);
 
-    // Pulisce l'evento quando il componente viene smontato
     return () => {
       window.removeEventListener('ares-discord-login', loadUser);
     };
   }, []);
 
   const handleDiscordConnect = () => {
-    // Inserito il link ufficiale generato da Discord per l'organizzazione ares-archive
     window.location.href = "https://discord.com/oauth2/authorize?client_id=1518053081919520799&response_type=code&redirect_uri=https%3A%2F%2Fares-archive.github.io%2Fdiscord-callback&scope=identify";
   };
 
@@ -60,7 +57,13 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleTheme 
           </span>
         </Link>
 
-        <div className="flex-1 max-w-xl relative hidden sm:block">
+        {/* Barra di ricerca animata con motion.div */}
+        <motion.div 
+          initial={{ width: '384px' }}
+          whileHover={{ width: '512px' }}
+          transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+          className="relative hidden sm:block"
+        >
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <input
             type="text"
@@ -73,7 +76,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleTheme 
                 : "bg-gray-50 border-gray-200 text-brand-dark placeholder:text-gray-400 focus:ring-brand-azure/30"
             )}
           />
-        </div>
+        </motion.div>
 
         <nav className="flex items-center gap-2 md:gap-6">
           <button 
