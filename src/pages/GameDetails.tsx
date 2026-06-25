@@ -44,6 +44,24 @@ const GithubIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   </svg>
 );
 
+// Icona Forum / CS.RIN.RU vettoriale (fumetto di discussione)
+const CsRinIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    <circle cx="8" cy="10" r="1" fill="currentColor" />
+    <circle cx="12" cy="10" r="1" fill="currentColor" />
+    <circle cx="16" cy="10" r="1" fill="currentColor" />
+  </svg>
+);
+
 // Helper per convertire i link di YouTube nel formato embed corretto con suggerimento HD (1080p)
 const getYouTubeEmbedUrl = (url: string): string | null => {
   if (!url) return null;
@@ -496,21 +514,35 @@ const GameDetails: React.FC = () => {
                         Original Steam Source
                       </a>
                     )}
-                    <a 
-                      href={game.goldbergUrl || "https://github.com/Detanup01/gbe_fork"} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="w-full py-3 bg-[#24292e]/80 hover:bg-[#2f363d]/80 border border-[#2f363d]/30 text-[#fafbfc] text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider shadow-lg shadow-[#24292e]/10 hover:shadow-[#24292e]/20 hover:-translate-y-0.5 active:translate-y-0"
-                    >
-                      <GithubIcon className="w-4 h-4 shrink-0" />
-                      Goldberg Emulator Fork
-                    </a>
+                    
+                    {/* Pulsante Dinamico: se rileva cs.rin.ru nel link, cambia in CS.RIN.RU Thread */}
+                    {game.goldbergUrl?.toLowerCase().includes('cs.rin.ru') ? (
+                      <a 
+                        href={game.goldbergUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="w-full py-3 bg-[#1e2330]/90 hover:bg-[#272d42]/90 border border-[#272d42]/30 text-[#00ffcc] text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider shadow-lg shadow-[#1e2330]/15 hover:shadow-[#1e2330]/30 hover:-translate-y-0.5 active:translate-y-0"
+                      >
+                        <CsRinIcon className="w-4 h-4 shrink-0" />
+                        CS.RIN.RU Thread
+                      </a>
+                    ) : (
+                      <a 
+                        href={game.goldbergUrl || "https://github.com/Detanup01/gbe_fork"} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="w-full py-3 bg-[#24292e]/80 hover:bg-[#2f363d]/80 border border-[#2f363d]/30 text-[#fafbfc] text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider shadow-lg shadow-[#24292e]/10 hover:shadow-[#24292e]/20 hover:-translate-y-0.5 active:translate-y-0"
+                      >
+                        <GithubIcon className="w-4 h-4 shrink-0" />
+                        Goldberg Emulator Fork
+                      </a>
+                    )}
                   </div>
 
                   {/* LINK COMMERCIALI */}
                   <div className="pt-8 border-t border-brand-border space-y-3">
                     <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-2">Support Developers</span>
-                    {game.steamUrl && <a href={game.steamUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#1b2838] hover:bg-[#2a475e] border border-transparent rounded-lg text-xs font-bold text-white shadow-lg transition-all text-center flex items-center justify-center py-2.5">Steam Store</a>}
+                    {game.steamUrl && <a href={game.steamUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#1b2838] hover:bg-[#2a475e] text-[#66c0f4] text-xs font-black rounded-xl transition-all flex items-center justify-center uppercase tracking-wider">Buy on Steam</a>}
                     {game.gogUrl && <a href={game.gogUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#110d26] hover:bg-[#5c2e91] text-[#bf9cff] text-xs font-black rounded-xl transition-all flex items-center justify-center uppercase tracking-wider">Buy on GOG</a>}
                     {game.epicUrl && <a href={game.epicUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#191919] hover:bg-[#2a2a2a] text-[#f5f5f5] text-xs font-black rounded-xl transition-all flex items-center justify-center uppercase tracking-wider">Buy on Epic Store</a>}
                   </div>
