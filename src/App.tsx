@@ -8,6 +8,7 @@ import Legal from './pages/Legal';
 import Privacy from './pages/Privacy';
 import AdminDashboard from './pages/AdminDashboard';
 import DiscordCallback from './pages/DiscordCallback';
+import Requests from './pages/Requests'; // Nuovo import
 
 function App() {
   const spaRedirect = new URLSearchParams(window.location.search).get('spa-redirect');
@@ -37,6 +38,7 @@ function App() {
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/discord-callback" element={<DiscordCallback />} />
+            <Route path="/requests" element={<Requests />} /> {/* Nuova rotta */}
           </Routes>
         </main>
         
@@ -56,6 +58,7 @@ function App() {
                 <Link to="/legal" className="hover:text-brand-azure transition-colors">Legal</Link>
                 <Link to="/privacy" className="hover:text-brand-azure transition-colors">Privacy</Link>
                 <Link to="/about" className="hover:text-brand-azure transition-colors">About</Link>
+                <Link to="/requests" className="hover:text-brand-azure transition-colors">Requests</Link> {/* Nuovo link nel Footer */}
                 <a 
                   href="https://discord.gg/sqkxTDqqBj" 
                   target="_blank" 
