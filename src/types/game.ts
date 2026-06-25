@@ -12,6 +12,7 @@ export interface Game {
   steamUrl: string;
   gogUrl: string;
   epicUrl: string;
+  goldbergUrl?: string; // Aggiunto: link personalizzato Goldberg Emulator
   tags: string[];
   genres: string[];
   platforms: string[];

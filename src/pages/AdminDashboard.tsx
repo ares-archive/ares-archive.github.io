@@ -17,6 +17,7 @@ const emptyGame: Partial<Game> = {
   steamUrl: '',
   gogUrl: '',
   epicUrl: '',
+  goldbergUrl: '', // Inizializzato
   tags: [],
   genres: [],
   platforms: ['windows']
@@ -103,15 +104,16 @@ const AdminDashboard = () => {
         title: dbGame.title || '',
         description: dbGame.description || '',
         developer: dbGame.developer || '',
-        buzzheavierLink: dbGame.pearcrypt_url || '', 
+        buzzheavierLink: dbGame.buzzheavier_url || dbGame.pearcrypt_url || '', 
         bannerImage: dbGame.banner_url || '',
         videoUrl: dbGame.video_url || '',
         steamScreenshots: dbGame.screenshots || [],
         releaseDate: dbGame.release_date || '', 
         isUpcoming: dbGame.is_upcoming || false, 
         steamUrl: dbGame.steam_url || '',
-        gogUrl: dbGame.gog_url || '',    // <-- MODIFICATO: Corretto da gogUrl a gog_url
-        epicUrl: dbGame.epic_url || '',  // <-- MODIFICATO: Corretto da epicUrl a epic_url
+        gogUrl: dbGame.gog_url || '',
+        epicUrl: dbGame.epic_url || '',
+        goldbergUrl: dbGame.goldberg_url || '', // Recuperato dal DB
         tags: ['New'],
         genres: dbGame.genre ? [dbGame.genre] : [], 
         platforms: ['windows'],
@@ -278,6 +280,7 @@ const AdminDashboard = () => {
       steamUrl: game.steamUrl,
       gogUrl: game.gogUrl,
       epicUrl: game.epicUrl,
+      goldbergUrl: game.goldbergUrl || '', // Assegnato in modifica
       tags: [...(game.tags || [])],
       genres: [...(game.genres || [])],
       platforms: [...(game.platforms || [])]
@@ -305,6 +308,7 @@ const AdminDashboard = () => {
       steam_url: activeGame.steamUrl || null,
       gog_url: activeGame.gogUrl || null,
       epic_url: activeGame.epicUrl || null,
+      goldberg_url: activeGame.goldbergUrl || null, // Aggiunto al payload
       genre: singleGenreString 
     };
 
@@ -473,7 +477,7 @@ const AdminDashboard = () => {
                 </button>
               </div>
 
-              {/* Selettore Genere Aggiornato */}
+              {/* Selettore Genere */}
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest pl-1">
                   Selected Genre
@@ -554,23 +558,31 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
+              {/* STORE & PRESERVATION LINKS */}
               <div className="space-y-2 pt-2 border-t border-brand-border/40">
-                <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest block pl-1">Store Links (Optional)</span>
+                <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest block pl-1">Store & Emulator Links (Optional)</span>
                 <input 
                   placeholder="Steam Store URL"
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm"
+                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-azure"
                   value={activeGame.steamUrl || ''}
                   onChange={e => setActiveGame({...activeGame, steamUrl: e.target.value})}
                 />
+                {/* Nuovo input per Goldberg Emulator URL personalizzato */}
+                <input 
+                  placeholder="Goldberg Emulator URL (Leave empty for default)"
+                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-azure"
+                  value={activeGame.goldbergUrl || ''}
+                  onChange={e => setActiveGame({...activeGame, goldbergUrl: e.target.value})}
+                />
                 <input 
                   placeholder="GOG Store URL"
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm"
+                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-azure"
                   value={activeGame.gogUrl || ''}
                   onChange={e => setActiveGame({...activeGame, gogUrl: e.target.value})}
                 />
                 <input 
                   placeholder="Epic Games Store URL"
-                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm"
+                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-azure"
                   value={activeGame.epicUrl || ''}
                   onChange={e => setActiveGame({...activeGame, epicUrl: e.target.value})}
                 />

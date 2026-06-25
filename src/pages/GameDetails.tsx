@@ -134,7 +134,7 @@ const GameDetails: React.FC = () => {
           title: data.title || '',
           description: data.description || '',
           developer: data.developer || '',
-          buzzheavierLink: data.buzzheavier_url || data.pearcrypt_url || '', // Aggiornato a Buzzheavier (con fallback per sicurezza)
+          buzzheavierLink: data.buzzheavier_url || data.pearcrypt_url || '', // Supporta Buzzheavier
           bannerImage: data.banner_url || '',
           videoUrl: data.video_url || '',
           steamScreenshots: data.screenshots || [], 
@@ -142,6 +142,7 @@ const GameDetails: React.FC = () => {
           steamUrl: data.steam_url || '', 
           gogUrl: data.gog_url || '',
           epicUrl: data.epic_url || '',
+          goldbergUrl: data.goldberg_url || '', // Mappatura del link Goldberg personalizzato
           tags: ['New'],
           genres: [],
           platforms: ['windows'],
@@ -496,7 +497,7 @@ const GameDetails: React.FC = () => {
                       </a>
                     )}
                     <a 
-                      href="https://github.com/Detanup01/gbe_fork" 
+                      href={game.goldbergUrl || "https://github.com/Detanup01/gbe_fork"} 
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className="w-full py-3 bg-[#24292e]/80 hover:bg-[#2f363d]/80 border border-[#2f363d]/30 text-[#fafbfc] text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider shadow-lg shadow-[#24292e]/10 hover:shadow-[#24292e]/20 hover:-translate-y-0.5 active:translate-y-0"
@@ -509,7 +510,7 @@ const GameDetails: React.FC = () => {
                   {/* LINK COMMERCIALI */}
                   <div className="pt-8 border-t border-brand-border space-y-3">
                     <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-2">Support Developers</span>
-                    {game.steamUrl && <a href={game.steamUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#1b2838] hover:bg-[#2a475e] text-[#66c0f4] text-xs font-black rounded-xl transition-all flex items-center justify-center uppercase tracking-wider">Buy on Steam</a>}
+                    {game.steamUrl && <a href={game.steamUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#1b2838] hover:bg-[#2a475e] border border-transparent rounded-lg text-xs font-bold text-white shadow-lg transition-all text-center flex items-center justify-center py-2.5">Steam Store</a>}
                     {game.gogUrl && <a href={game.gogUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#110d26] hover:bg-[#5c2e91] text-[#bf9cff] text-xs font-black rounded-xl transition-all flex items-center justify-center uppercase tracking-wider">Buy on GOG</a>}
                     {game.epicUrl && <a href={game.epicUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#191919] hover:bg-[#2a2a2a] text-[#f5f5f5] text-xs font-black rounded-xl transition-all flex items-center justify-center uppercase tracking-wider">Buy on Epic Store</a>}
                   </div>
