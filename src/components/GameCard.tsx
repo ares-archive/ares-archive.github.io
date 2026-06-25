@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Download, Monitor, Apple, Terminal } from 'lucide-react';
+import { Monitor, Apple } from 'lucide-react';
 import { Game } from '../types/game';
 
 interface GameCardProps {
@@ -40,15 +40,10 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
             {game.description}
           </p>
           
-          <div className="flex items-center justify-between">
+          <div className="flex items-center">
             <span className="text-[10px] font-black px-2 py-1 bg-brand-border rounded text-gray-400 uppercase tracking-widest">
               {game.releaseDate}
             </span>
-            
-            <div className="flex items-center gap-2 text-brand-azure font-bold text-sm">
-              <Download className="w-4 h-4" />
-              <span>GET</span>
-            </div>
           </div>
         </div>
       </Link>

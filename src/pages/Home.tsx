@@ -8,26 +8,26 @@ interface HomeProps {
   searchQuery: string;
 }
 
-// Icona SVG ufficiale di Discord
-const DiscordIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg
-    viewBox="0 0 127.14 96.36"
-    fill="currentColor"
+// Icona ufficiale di Discord
+const DiscordIcon: React.FC<React.ImgHTMLAttributes<HTMLImageElement>> = ({ className, style, ...props }) => (
+  <img
+    src="/discord.png"
+    alt="Discord"
+    className={`object-contain ${className || ''}`.trim()}
+    style={style}
     {...props}
-  >
-    <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.5-5c.87-.64,1.71-1.32,2.51-2a75.52,75.52,0,0,0,73,0c.8.71,1.64,1.39,2.51,2a68.43,68.43,0,0,1-10.5,5,77.7,77.7,0,0,0,6.63,10.85,105.73,105.73,0,0,0,31-18.83C129,50.7,122.64,27.78,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z" />
-  </svg>
+  />
 );
 
-// Icona SVG ufficiale originale di Ko-fi (Nuovo logo rebrand)
-const KofiIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="currentColor"
+// Icona ufficiale di Ko-fi
+const KofiIcon: React.FC<React.ImgHTMLAttributes<HTMLImageElement>> = ({ className, style, ...props }) => (
+  <img
+    src="/kofi.png"
+    alt="Ko-fi"
+    className={`object-contain ${className || ''}`.trim()}
+    style={style}
     {...props}
-  >
-    <path d="M11.351 2.715c-2.7 0-4.986.025-6.83.26C2.078 3.285 0 5.154 0 8.61c0 3.506.182 6.13 1.585 8.493 1.584 2.701 4.233 4.182 7.662 4.182h.83c4.209 0 6.494-2.234 7.637-4a9.5 9.5 0 0 0 1.091-2.338C21.792 14.688 24 12.22 24 9.208v-.415c0-3.247-2.13-5.507-5.792-5.87-1.558-.156-2.65-.208-6.857-.208m0 1.947c4.209 0 5.09.052 6.571.182 2.624.311 4.13 1.584 4.13 4v.39c0 2.156-1.792 3.844-3.87 3.844h-.935l-.156.649c-.208 1.013-.597 1.818-1.039 2.546-.909 1.428-2.545 3.064-5.922 3.064h-.805c-2.571 0-4.831-.883-6.078-3.195-1.09-2-1.298-4.155-1.298-7.506 0-2.181.857-3.402 3.012-3.714 1.533-.233 3.559-.26 6.39-.26m6.547 2.287c-.416 0-.65.234-.65.546v2.935c0 .311.234.545.65.545 1.324 0 2.051-.754 2.051-2s-.727-2.026-2.052-2.026m-10.39.182c-1.818 0-3.013 1.48-3.013 3.142 0 1.533.858 2.857 1.949 3.897.727.701 1.87 1.429 2.649 1.896a1.47 1.47 0 0 0 1.507 0c.78-.467 1.922-1.195 2.623-1.896 1.117-1.039 1.974-2.364 1.974-3.897 0-1.662-1.247-3.142-3.039-3.142-1.065 0-1.792.545-2.338 1.298-.493-.753-1.246-1.298-2.312-1.298" />
-  </svg>
+  />
 );
 
 const Home: React.FC<HomeProps> = ({ searchQuery }) => {
@@ -48,17 +48,14 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
       if (error) {
         console.error("Errore nel recupero dei giochi:", error);
       } else if (data) {
-        // Recupera la lingua attiva nel browser dell'utente (di default 'en')
         const userLang = localStorage.getItem('ares_lang') || 'en';
 
         const mappedGames: Game[] = data.map(dbGame => {
-          // Seleziona dinamicamente il titolo tradotto se presente in tabella, altrimenti usa l'originale
           const title = 
             (userLang === 'it' && (dbGame as any).title_it) ? (dbGame as any).title_it : 
             (userLang === 'es' && (dbGame as any).title_es) ? (dbGame as any).title_es : 
             dbGame.title;
 
-          // Seleziona dinamicamente la descrizione tradotta se presente in tabella, altrimenti usa l'originale
           const description = 
             (userLang === 'it' && (dbGame as any).description_it) ? (dbGame as any).description_it : 
             (userLang === 'es' && (dbGame as any).description_es) ? (dbGame as any).description_es : 
@@ -147,8 +144,8 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
           <div className="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-[#5865F2] rounded-full blur-[60px] opacity-20 pointer-events-none" />
           
           <div className="flex items-start gap-4 z-[1]">
-            <div className="p-3 bg-[#5865F2]/10 border border-[#5865F2]/20 rounded-xl text-[#5865F2] shrink-0">
-              <DiscordIcon className="w-6 h-6 fill-current" />
+            <div className="p-3 bg-[#5865F2]/10 border border-[#5865F2]/20 rounded-xl shrink-0">
+              <DiscordIcon className="w-6 h-6" />
             </div>
             <div>
               <h2 className="text-lg font-black uppercase tracking-tight text-white mb-1">
@@ -167,7 +164,11 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 bg-[#5865F2] hover:bg-[#4752C4] text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-[#5865F2]/20 hover:shadow-[#5865F2]/30 transform hover:-translate-y-0.5 active:translate-y-0 text-center"
             >
-              <DiscordIcon className="w-3.5 h-3.5 fill-current" />
+              {/* Modifica qui: filtro drop-shadow applicato ai contorni trasparenti del PNG */}
+              <DiscordIcon 
+                className="w-4 h-4" 
+                style={{ filter: 'drop-shadow(1px 0px 0px black) drop-shadow(-1px 0px 0px black) drop-shadow(0px 1px 0px black) drop-shadow(0px -1px 0px black)' }} 
+              />
               Join Us Now
             </a>
           </div>
@@ -178,8 +179,8 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
           <div className="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-[#FF5E5B] rounded-full blur-[60px] opacity-20 pointer-events-none" />
           
           <div className="flex items-start gap-4 z-[1]">
-            <div className="p-3 bg-[#FF5E5B]/10 border border-[#FF5E5B]/20 rounded-xl text-[#FF5E5B] shrink-0">
-              <KofiIcon className="w-6 h-6 fill-current" />
+            <div className="p-3 bg-[#FF5E5B]/10 border border-[#FF5E5B]/20 rounded-xl shrink-0">
+              <KofiIcon className="w-6 h-6" />
             </div>
             <div>
               <h2 className="text-lg font-black uppercase tracking-tight text-white mb-1">
@@ -198,7 +199,7 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 bg-[#FF5E5B] hover:bg-[#e04f4c] text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-[#FF5E5B]/20 hover:shadow-[#FF5E5B]/30 transform hover:-translate-y-0.5 active:translate-y-0 text-center"
             >
-              <KofiIcon className="w-3.5 h-3.5 fill-current" />
+              <KofiIcon className="w-3.5 h-3.5" />
               Support on Ko-fi
             </a>
           </div>
