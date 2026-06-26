@@ -9,7 +9,8 @@ import {
   Info, 
   CheckCircle, 
   AlertTriangle, 
-  ExternalLink 
+  ExternalLink,
+  Clock
 } from 'lucide-react';
 
 // Icona Steam ufficiale vettoriale
@@ -33,6 +34,27 @@ const Requests: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [cooldownTimeLeft, setCooldownTimeLeft] = useState(0);
+
+  // Monitora in tempo reale lo stato dell'anti-flood cooldown (1 minuto)
+  useEffect(() => {
+    const checkCooldown = () => {
+      const lastRequest = localStorage.getItem('ares_last_request_time');
+      if (lastRequest) {
+        const elapsed = Date.now() - parseInt(lastRequest, 10);
+        const cooldownDuration = 60000; // 1 minuto in millisecondi
+        if (elapsed < cooldownDuration) {
+          setCooldownTimeLeft(Math.ceil((cooldownDuration - elapsed) / 1000));
+        } else {
+          setCooldownTimeLeft(0);
+        }
+      }
+    };
+
+    checkCooldown();
+    const interval = setInterval(checkCooldown, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Rileva automaticamente l'AppID se l'utente incolla un URL completo di Steam
   const handleAppIdInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,6 +73,18 @@ const Requests: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Ulteriore controllo di sicurezza anti-flood sul client
+    const lastRequest = localStorage.getItem('ares_last_request_time');
+    if (lastRequest) {
+      const elapsed = Date.now() - parseInt(lastRequest, 10);
+      if (elapsed < 60000) {
+        setSubmitStatus('error');
+        setErrorMessage(`Anti-spam cooling down. Please wait ${Math.ceil((60000 - elapsed) / 1000)} seconds.`);
+        return;
+      }
+    }
+
     if (!appId || !title) {
       setSubmitStatus('error');
       setErrorMessage('Please fill in both the Steam AppID and the Game Title.');
@@ -79,6 +113,10 @@ const Requests: React.FC = () => {
       }
 
       setSubmitStatus('success');
+      
+      // Salva l'ora corrente come marcatore dell'ultimo invio riuscito per l'anti-flood
+      localStorage.setItem('ares_last_request_time', Date.now().toString());
+
       // Pulisce i campi in caso di successo
       setAppId('');
       setTitle('');
@@ -129,6 +167,7 @@ const Requests: React.FC = () => {
                 onChange={handleAppIdInput}
                 className="w-full px-4 py-3 bg-brand-dark border border-brand-border rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand-azure transition-colors"
                 required
+                disabled={cooldownTimeLeft > 0}
               />
               <p className="text-[10px] text-gray-500 mt-1.5">
                 We automatically parse full Steam links. If valid, the AppID is extracted instantly.
@@ -158,6 +197,7 @@ const Requests: React.FC = () => {
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full px-4 py-3 bg-brand-dark border border-brand-border rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand-azure transition-colors"
                 required
+                disabled={cooldownTimeLeft > 0}
               />
             </div>
 
@@ -173,6 +213,7 @@ const Requests: React.FC = () => {
                 value={discordTag}
                 onChange={(e) => setDiscordTag(e.target.value)}
                 className="w-full px-4 py-3 bg-brand-dark border border-brand-border rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand-azure transition-colors"
+                disabled={cooldownTimeLeft > 0}
               />
               <p className="text-[10px] text-gray-500 mt-1.5">
                 We use this to credit your request or ping you on the ARES server once archived.
@@ -191,19 +232,38 @@ const Requests: React.FC = () => {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="w-full px-4 py-3 bg-brand-dark border border-brand-border rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand-azure transition-colors resize-none"
+                disabled={cooldownTimeLeft > 0}
               />
             </div>
+
+            {/* Avviso Cooldown Attivo */}
+            {cooldownTimeLeft > 0 && (
+              <div className="flex items-start gap-3 p-4 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-xl animate-fade-in">
+                <Clock className="w-5 h-5 shrink-0 mt-0.5 animate-pulse" />
+                <div>
+                  <h4 className="font-bold text-sm text-white">Rate Limit Active</h4>
+                  <p className="text-xs text-gray-400 mt-1">
+                    To prevent spam and server flooding, you must wait {cooldownTimeLeft} more seconds before submitting another request.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Submission Button */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || cooldownTimeLeft > 0}
               className="w-full flex items-center justify-center gap-2 py-3.5 bg-brand-azure hover:bg-brand-azure/80 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
                   Submitting Request...
+                </>
+              ) : cooldownTimeLeft > 0 ? (
+                <>
+                  <Clock className="w-4 h-4" />
+                  Wait {cooldownTimeLeft}s (Cooldown Active)
                 </>
               ) : (
                 <>
@@ -220,7 +280,7 @@ const Requests: React.FC = () => {
                 <div>
                   <h4 className="font-bold text-sm text-white">Request Submitted!</h4>
                   <p className="text-xs text-gray-400 mt-1">
-                    Your request was added to the queue. Our curators will evaluate the database structure and metadata shortly.
+                    Your request was added to the queue. Please wait at least 1 minute before submitting any further requests.
                   </p>
                 </div>
               </div>

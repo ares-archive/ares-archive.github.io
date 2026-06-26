@@ -16,7 +16,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Maximize2,
-  X
+  X,
+  Cpu
 } from 'lucide-react';
 import { supabase } from '../supabase'; 
 import { Game } from '../types/game';
@@ -161,6 +162,8 @@ const GameDetails: React.FC = () => {
           gogUrl: data.gog_url || '',
           epicUrl: data.epic_url || '',
           goldbergUrl: data.goldberg_url || '', // Mappatura del link Goldberg personalizzato
+          minimumRequirements: data.minimum_requirements || '', // Requisiti minimi
+          recommendedRequirements: data.recommended_requirements || '', // Requisiti consigliati
           tags: ['New'],
           genres: [],
           platforms: ['windows'],
@@ -212,7 +215,7 @@ const GameDetails: React.FC = () => {
 
   const handleFullscreenNext = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setFullscreenIndex(prev => (prev === null || prev === mediaItems.length - 1 ? 0 : prev + 1));
+    setFullscreenIndex(prev => (prev === null || prev === 0 ? mediaItems.length - 1 : prev + 1));
   };
 
   useEffect(() => {
@@ -287,6 +290,26 @@ const GameDetails: React.FC = () => {
       fetchComments(); 
     }
     setSubmittingComment(false);
+  };
+
+  // Funzione helper intelligente per formattare HTML o testo semplice dei requisiti di Steam
+  const renderRequirements = (reqHtml: string) => {
+    if (!reqHtml || reqHtml.trim() === '') {
+      return <span className="text-gray-500 italic">No detailed specifications registered for this database record.</span>;
+    }
+    // Se la stringa contiene tag HTML (tipico delle stringhe esportate dall'API di Steam)
+    if (/<[a-z][\s\S]*>/i.test(reqHtml)) {
+      return (
+        <div 
+          className="text-xs text-gray-400 space-y-1.5 leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1 [&_strong]:text-white [&_strong]:font-bold"
+          dangerouslySetInnerHTML={{ __html: reqHtml }}
+        />
+      );
+    }
+    // Altrimenti, fallback con interruzioni di riga standard
+    return (
+      <p className="text-xs text-gray-400 leading-relaxed whitespace-pre-wrap">{reqHtml}</p>
+    );
   };
 
   if (loading) {
@@ -417,14 +440,48 @@ const GameDetails: React.FC = () => {
               </section>
             )}
 
-            <section>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="h-8 w-1.5 bg-brand-azure rounded-full" />
-                <h2 className="text-3xl font-black text-white tracking-tight uppercase">Overview</h2>
+            <section className="space-y-12">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="h-8 w-1.5 bg-brand-azure rounded-full" />
+                  <h2 className="text-3xl font-black text-white tracking-tight uppercase">Overview</h2>
+                </div>
+                <p className="text-xl leading-relaxed text-gray-400 font-medium max-w-3xl">
+                  {game.description}
+                </p>
               </div>
-              <p className="text-xl leading-relaxed text-gray-400 font-medium max-w-3xl">
-                {game.description}
-              </p>
+
+              {/* REQUISITI DI SISTEMA DETTAGLIATI (Sotto a Overview) */}
+              <div className="pt-10 border-t border-brand-border space-y-8 animate-fade-in">
+                <div className="flex items-center gap-3">
+                  <Cpu className="w-8 h-8 text-brand-azure" />
+                  <h3 className="text-2xl font-black text-white uppercase tracking-tight">System Requirements</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Requisiti Minimi */}
+                  <div className="bg-brand-card/45 border border-brand-border rounded-[2rem] p-8 space-y-4 hover:border-brand-azure/30 transition-colors shadow-xl">
+                    <h4 className="text-sm font-black uppercase text-brand-azure tracking-widest flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-brand-azure rounded-full" />
+                      Minimum Requirements
+                    </h4>
+                    <div className="font-medium">
+                      {renderRequirements(game.minimumRequirements || '')}
+                    </div>
+                  </div>
+
+                  {/* Requisiti Consigliati */}
+                  <div className="bg-brand-card/45 border border-brand-border rounded-[2rem] p-8 space-y-4 hover:border-[#00ffcc]/30 transition-colors shadow-xl">
+                    <h4 className="text-sm font-black uppercase text-[#00ffcc] tracking-widest flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-[#00ffcc] rounded-full" />
+                      Recommended Requirements
+                    </h4>
+                    <div className="font-medium">
+                      {renderRequirements(game.recommendedRequirements || '')}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </section>
 
             {/* COMMENTI */}
@@ -461,7 +518,7 @@ const GameDetails: React.FC = () => {
               <div className="space-y-4">
                 {comments.map(comment => (
                   <div key={comment.id} className="bg-brand-card/30 p-5 rounded-2xl border border-brand-border/60 flex gap-4">
-                    <img src={comment.avatar_url || "https://cdn.discordapp.com/embed/avatars/0.png"} alt="Avatar" className="w-10 h-10 rounded-full object-cover shrink-0" />
+                    <img src={comment.avatar_url || "https://cdn.discord0.png"} alt="Avatar" className="w-8 h-8 rounded-full border border-brand-azure object-cover" />
                     <div>
                       <div className="flex items-center gap-3 mb-1">
                         <span className="text-sm font-black text-white">{comment.username}</span>

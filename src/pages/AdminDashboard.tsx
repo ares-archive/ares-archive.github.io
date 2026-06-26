@@ -18,6 +18,8 @@ const emptyGame: Partial<Game> = {
   gogUrl: '',
   epicUrl: '',
   goldbergUrl: '', // Inizializzato
+  minimumRequirements: '', // Inizializzato
+  recommendedRequirements: '', // Inizializzato
   tags: [],
   genres: [],
   platforms: ['windows']
@@ -104,7 +106,7 @@ const AdminDashboard = () => {
         title: dbGame.title || '',
         description: dbGame.description || '',
         developer: dbGame.developer || '',
-        buzzheavierLink: dbGame.buzzheavier_url || dbGame.pearcrypt_url || '', 
+        buzzheavierLink: dbGame.pearcrypt_url || '', 
         bannerImage: dbGame.banner_url || '',
         videoUrl: dbGame.video_url || '',
         steamScreenshots: dbGame.screenshots || [],
@@ -114,52 +116,13 @@ const AdminDashboard = () => {
         gogUrl: dbGame.gog_url || '',
         epicUrl: dbGame.epic_url || '',
         goldbergUrl: dbGame.goldberg_url || '', // Recuperato dal DB
+        minimumRequirements: dbGame.minimum_requirements || '', // Recuperato dal DB
+        recommendedRequirements: dbGame.recommended_requirements || '', // Recuperato dal DB
         tags: ['New'],
         genres: dbGame.genre ? [dbGame.genre] : [], 
         platforms: ['windows'],
       }));
       setGames(mappedGames);
-    }
-  };
-
-  // RILEVAMENTO GENERE AUTOMATICO POTENZIATO
-  const fetchGenreFromSteam = async (steamUrl: string): Promise<string[]> => {
-    try {
-      const match = steamUrl.match(/\/app\/(\d+)/);
-      if (!match) return [];
-      
-      const steamId = match[1];
-      const response = await fetch(`https://store.steampowered.com/api/appdetails?appids=${steamId}&l=italian`);
-      if (!response.ok) return [];
-
-      const data = await response.json() as any;
-      if (!data[steamId] || !data[steamId].success || !data[steamId].data.genres) return [];
-
-      const steamGenres = data[steamId].data.genres as { id: string; description: string }[];
-      
-      // Controlliamo i generi combinando la stringa principale e quelle secondarie
-      for (const g of steamGenres) {
-        const desc = g.description.toLowerCase();
-        if (desc.includes('horror')) return ['Horror'];
-        if (desc.includes('survival') || desc.includes('sopravvivenza')) return ['Survival'];
-        if (desc.includes('rpg') || desc.includes('ruolo') || desc.includes('role')) return ['RPG'];
-        if (desc.includes('strateg') || desc.includes('strategy')) return ['Strategy'];
-        if (desc.includes('corsa') || desc.includes('racing') || desc.includes('automobilismo')) return ['Racing'];
-        if (desc.includes('sport')) return ['Sports'];
-        if (desc.includes('combattimento') || desc.includes('fighting')) return ['Fighting'];
-        if (desc.includes('simulaz') || desc.includes('simulation')) return ['Simulation'];
-        if (desc.includes('rompicapo') || desc.includes('puzzle')) return ['Puzzle'];
-        if (desc.includes('platform') || desc.includes('piattaforme')) return ['Platformer'];
-        if (desc.includes('azion') || desc.includes('action') || desc.includes('sparatutto') || desc.includes('shooter')) return ['Action'];
-        if (desc.includes('avventur') || desc.includes('adventure')) return ['Adventure'];
-      }
-
-      if (steamGenres.some(g => g.description.toLowerCase().includes('indie'))) return ['Indie'];
-      
-      return [];
-    } catch (err) {
-      console.error("Impossibile recuperare il genere da Steam:", err);
-      return [];
     }
   };
 
@@ -210,11 +173,57 @@ const AdminDashboard = () => {
       }
 
       let autoGenres: string[] = [];
+      let steamMinReqs = '';
+      let steamRecReqs = '';
+
       if (steamLink) {
-        autoGenres = await fetchGenreFromSteam(steamLink);
+        const match = steamLink.match(/\/app\/(\d+)/);
+        if (match && match[1]) {
+          const steamId = match[1];
+          try {
+            const response = await fetch(`https://store.steampowered.com/api/appdetails?appids=${steamId}&l=italian`);
+            if (response.ok) {
+              const steamData = await response.json() as any;
+              if (steamData[steamId] && steamData[steamId].success) {
+                const sInfo = steamData[steamId].data;
+                
+                // Estrazione Genere
+                if (sInfo.genres) {
+                  const steamGenres = sInfo.genres as { id: string; description: string }[];
+                  for (const g of steamGenres) {
+                    const desc = g.description.toLowerCase();
+                    if (desc.includes('horror')) autoGenres = ['Horror'];
+                    else if (desc.includes('survival') || desc.includes('sopravvivenza')) autoGenres = ['Survival'];
+                    else if (desc.includes('rpg') || desc.includes('ruolo') || desc.includes('role')) autoGenres = ['RPG'];
+                    else if (desc.includes('strateg') || desc.includes('strategy')) autoGenres = ['Strategy'];
+                    else if (desc.includes('corsa') || desc.includes('racing') || desc.includes('automobilismo')) autoGenres = ['Racing'];
+                    else if (desc.includes('sport')) autoGenres = ['Sports'];
+                    else if (desc.includes('combattimento') || desc.includes('fighting')) autoGenres = ['Fighting'];
+                    else if (desc.includes('simulaz') || desc.includes('simulation')) autoGenres = ['Simulation'];
+                    else if (desc.includes('rompicapo') || desc.includes('puzzle')) autoGenres = ['Puzzle'];
+                    else if (desc.includes('platform') || desc.includes('piattaforme')) autoGenres = ['Platformer'];
+                    else if (desc.includes('azion') || desc.includes('action') || desc.includes('sparatutto') || desc.includes('shooter')) autoGenres = ['Action'];
+                    else if (desc.includes('avventur') || desc.includes('adventure')) autoGenres = ['Adventure'];
+                  }
+                  if (autoGenres.length === 0 && steamGenres.some(g => g.description.toLowerCase().includes('indie'))) {
+                    autoGenres = ['Indie'];
+                  }
+                }
+
+                // Estrazione dei Requisiti di sistema completi
+                if (sInfo.pc_requirements) {
+                  steamMinReqs = sInfo.pc_requirements.minimum || '';
+                  steamRecReqs = sInfo.pc_requirements.recommended || '';
+                }
+              }
+            }
+          } catch (err) {
+            console.error("Errore nel recupero specifico da Steam API:", err);
+          }
+        }
       }
 
-      // Se non trovato da Steam, proviamo una mappatura veloce da RAWG
+      // Se non trovato da Steam, proviamo una mappatura veloce da RAWG per il genere
       if (autoGenres.length === 0 && foundGame.genres && foundGame.genres.length > 0) {
         const rawgGenre = foundGame.genres[0].name.toLowerCase();
         if (rawgGenre.includes('action')) autoGenres = ['Action'];
@@ -242,14 +251,16 @@ const AdminDashboard = () => {
         steamUrl: steamLink,
         gogUrl: gogLink,
         epicUrl: epicLink,
-        genres: autoGenres.length > 0 ? autoGenres : prev.genres
+        genres: autoGenres.length > 0 ? autoGenres : prev.genres,
+        minimumRequirements: steamMinReqs || prev.minimumRequirements,
+        recommendedRequirements: steamRecReqs || prev.recommendedRequirements
       }));
 
-      if (autoGenres.length > 0) {
-        alert(`Dati, screenshot, link store e Genere rilevato automaticamente ("${autoGenres[0]}") caricati con successo!`);
-      } else {
-        alert(`Dati, screenshot e link agli Store ufficiali di "${foundGame.name}" scaricati da RAWG! (Genere non rilevato, impostalo manualmente).`);
+      let autoFillMessage = `Dati, screenshot e link store per "${foundGame.name}" caricati con successo!`;
+      if (steamMinReqs || steamRecReqs) {
+        autoFillMessage += ` Rilevati anche i requisiti di sistema ufficiali direttamente da Steam.`;
       }
+      alert(autoFillMessage);
 
     } catch (err) {
       console.error("Errore RAWG/Steam Sync:", err);
@@ -280,7 +291,9 @@ const AdminDashboard = () => {
       steamUrl: game.steamUrl,
       gogUrl: game.gogUrl,
       epicUrl: game.epicUrl,
-      goldbergUrl: game.goldbergUrl || '', // Assegnato in modifica
+      goldbergUrl: game.goldbergUrl || '', 
+      minimumRequirements: game.minimumRequirements || '', // Assegnato in modifica
+      recommendedRequirements: game.recommendedRequirements || '', // Assegnato in modifica
       tags: [...(game.tags || [])],
       genres: [...(game.genres || [])],
       platforms: [...(game.platforms || [])]
@@ -308,7 +321,9 @@ const AdminDashboard = () => {
       steam_url: activeGame.steamUrl || null,
       gog_url: activeGame.gogUrl || null,
       epic_url: activeGame.epicUrl || null,
-      goldberg_url: activeGame.goldbergUrl || null, // Aggiunto al payload
+      goldberg_url: activeGame.goldbergUrl || null,
+      minimum_requirements: activeGame.minimumRequirements || null, // Aggiunto al payload
+      recommended_requirements: activeGame.recommendedRequirements || null, // Aggiunto al payload
       genre: singleGenreString 
     };
 
@@ -567,7 +582,7 @@ const AdminDashboard = () => {
                   value={activeGame.steamUrl || ''}
                   onChange={e => setActiveGame({...activeGame, steamUrl: e.target.value})}
                 />
-                {/* Nuovo input per Goldberg Emulator URL personalizzato */}
+                {/* Input per Goldberg Emulator URL personalizzato */}
                 <input 
                   placeholder="Goldberg Emulator URL (Leave empty for default)"
                   className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-azure"
@@ -585,6 +600,23 @@ const AdminDashboard = () => {
                   className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-azure"
                   value={activeGame.epicUrl || ''}
                   onChange={e => setActiveGame({...activeGame, epicUrl: e.target.value})}
+                />
+              </div>
+
+              {/* REQUISITI DI SISTEMA (Sotto a Store & Emulator Links) */}
+              <div className="space-y-2 pt-2 border-t border-brand-border/40">
+                <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest block pl-1">System Requirements (Optional)</span>
+                <textarea 
+                  placeholder="Minimum Requirements (HTML from Steam or Plain Text)"
+                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-azure h-24 resize-none"
+                  value={activeGame.minimumRequirements || ''}
+                  onChange={e => setActiveGame({...activeGame, minimumRequirements: e.target.value})}
+                />
+                <textarea 
+                  placeholder="Recommended Requirements (HTML from Steam or Plain Text)"
+                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-azure h-24 resize-none"
+                  value={activeGame.recommendedRequirements || ''}
+                  onChange={e => setActiveGame({...activeGame, recommendedRequirements: e.target.value})}
                 />
               </div>
 
