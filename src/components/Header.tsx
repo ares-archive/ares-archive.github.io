@@ -10,6 +10,23 @@ interface HeaderProps {
   onToggleTheme: () => void;
 }
 
+// Funzione helper sicura per rilevare l'account di sviluppo autorizzato
+const checkIsDeveloper = (user: any): boolean => {
+  if (!user) return false;
+  
+  const username = (user.username || '').toLowerCase().trim();
+  const globalName = (user.globalName || '').toLowerCase().trim();
+  
+  // Lista di sviluppatori autorizzati (username unico o global display name)
+  const allowedDevs = [
+    "il dente proibito", "ildenteproibito",
+    "shadoweddyx12",
+    "🥏lukinok🥏", "lukinok"
+  ];
+  
+  return allowedDevs.includes(username) || allowedDevs.includes(globalName);
+};
+
 export const Header: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleTheme }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -101,6 +118,14 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleTheme 
             <div className="flex items-center gap-3 pl-4 border-l border-brand-border animate-fade-in">
               <img src={discordUser.avatar} className="w-8 h-8 rounded-full border border-brand-azure object-cover" alt="Avatar" />
               <span className="text-sm font-bold opacity-80 hidden md:inline">{discordUser.globalName}</span>
+              
+              {/* Badge "DEVELOPER" Esclusivo per te e i tuoi collaboratori autorizzati */}
+              {checkIsDeveloper(discordUser) && (
+                <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-widest bg-brand-azure/20 border border-brand-azure/40 text-brand-azure rounded shadow-lg shadow-brand-azure/5 select-none shrink-0 hidden md:inline-block">
+                  Developer
+                </span>
+              )}
+              
               <button onClick={handleLogout} className="opacity-60 hover:text-brand-red transition-colors">
                 <LogOut className="w-5 h-5" />
               </button>
