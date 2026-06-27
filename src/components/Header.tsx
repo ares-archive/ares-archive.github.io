@@ -105,8 +105,11 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleTheme 
 
           <Link to="/about" className="text-sm font-semibold hover:text-brand-azure transition-colors opacity-70 hidden md:block">About</Link>
           
-          {/* Link Requests aggiunto con lo stesso stile visivo di About */}
+          {/* Link Requests */}
           <Link to="/requests" className="text-sm font-semibold hover:text-brand-azure transition-colors opacity-70 hidden md:block">Requests</Link>
+          
+          {/* Link Hypervisor Crack aggiunto con lo stesso stile visivo */}
+          <Link to="/hypervisor" className="text-sm font-semibold hover:text-brand-azure transition-colors opacity-70 hidden md:block">Hypervisor Crack</Link>
           
           {isAdmin && isAdminRoute && (
             <Link to="/admin" className="p-2 text-brand-azure hover:bg-brand-azure/10 rounded-lg transition-colors">

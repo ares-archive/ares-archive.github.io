@@ -13,6 +13,9 @@ export interface Game {
   gogUrl: string;
   epicUrl: string;
   goldbergUrl?: string; // Aggiunto: link personalizzato Goldberg Emulator
+  minimumRequirements?: string; // Requisiti minimi
+  recommendedRequirements?: string; // Requisiti consigliati
+  crackedBy?: string; // Aggiunto: gruppo/team di cracking (es. DenuvOwO)
   tags: string[];
   genres: string[];
   platforms: string[];

@@ -20,6 +20,7 @@ const emptyGame: Partial<Game> = {
   goldbergUrl: '', // Inizializzato
   minimumRequirements: '', // Inizializzato
   recommendedRequirements: '', // Inizializzato
+  crackedBy: '', // Inizializzato
   tags: [],
   genres: [],
   platforms: ['windows']
@@ -118,6 +119,7 @@ const AdminDashboard = () => {
         goldbergUrl: dbGame.goldberg_url || '', // Recuperato dal DB
         minimumRequirements: dbGame.minimum_requirements || '', // Recuperato dal DB
         recommendedRequirements: dbGame.recommended_requirements || '', // Recuperato dal DB
+        crackedBy: dbGame.cracked_by || '', // Recuperato dal DB
         tags: ['New'],
         genres: dbGame.genre ? [dbGame.genre] : [], 
         platforms: ['windows'],
@@ -335,6 +337,7 @@ const AdminDashboard = () => {
       goldbergUrl: game.goldbergUrl || '', 
       minimumRequirements: game.minimumRequirements || '', 
       recommendedRequirements: game.recommendedRequirements || '', 
+      crackedBy: game.crackedBy || '', // Assegnato in modifica
       tags: [...(game.tags || [])],
       genres: [...(game.genres || [])],
       platforms: [...(game.platforms || [])]
@@ -366,6 +369,7 @@ const AdminDashboard = () => {
       goldberg_url: activeGame.goldbergUrl || null,
       minimum_requirements: activeGame.minimumRequirements || null, 
       recommended_requirements: activeGame.recommendedRequirements || null, 
+      cracked_by: activeGame.crackedBy || null, // Aggiunto al payload per Supabase
       genre: singleGenreString 
     };
 
@@ -570,12 +574,22 @@ const AdminDashboard = () => {
                 onChange={e => setActiveGame({...activeGame, description: e.target.value})}
                 required
               />
-              <input
-                placeholder="Developer name"
-                className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm"
-                value={activeGame.developer || ''}
-                onChange={e => setActiveGame({...activeGame, developer: e.target.value})}
-              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input
+                  placeholder="Developer name"
+                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-azure"
+                  value={activeGame.developer || ''}
+                  onChange={e => setActiveGame({...activeGame, developer: e.target.value})}
+                />
+                
+                {/* Nuova area per il tag Cracked By / Scene Group */}
+                <input
+                  placeholder="Cracked By (e.g. DenuvOwO)"
+                  className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-azure"
+                  value={activeGame.crackedBy || ''}
+                  onChange={e => setActiveGame({...activeGame, crackedBy: e.target.value})}
+                />
+              </div>
               
               <div className="flex items-center gap-3 pl-1 py-1">
                 <input 
