@@ -139,14 +139,22 @@ const GameDetails: React.FC = () => {
         console.error("Errore nel recupero del dettaglio:", error);
         setGame(null);
       } else if (data) {
-        const targetDateStr = data.release_date || data.created_at;
-        const formattedReleaseDate = targetDateStr 
-          ? new Date(targetDateStr).toLocaleDateString('it-IT', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })
-          : 'Data non disponibile';
+        // Controllo blindato e sicuro contro date nulle, vuote o formati non validi
+        let formattedReleaseDate = 'TBA';
+        if (data.release_date && data.release_date.trim() !== '') {
+          try {
+            const parsedDate = new Date(data.release_date);
+            if (!isNaN(parsedDate.getTime())) {
+              formattedReleaseDate = parsedDate.toLocaleDateString('it-IT', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              });
+            }
+          } catch {
+            formattedReleaseDate = 'TBA';
+          }
+        }
 
         const mappedGame: Game = {
           id: data.id.toString(),
@@ -215,7 +223,7 @@ const GameDetails: React.FC = () => {
 
   const handleFullscreenNext = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setFullscreenIndex(prev => (prev === null || prev === 0 ? mediaItems.length - 1 : prev + 1));
+    setFullscreenIndex(prev => (prev === null || prev === mediaItems.length - 1 ? 0 : prev + 1));
   };
 
   useEffect(() => {
@@ -518,7 +526,7 @@ const GameDetails: React.FC = () => {
               <div className="space-y-4">
                 {comments.map(comment => (
                   <div key={comment.id} className="bg-brand-card/30 p-5 rounded-2xl border border-brand-border/60 flex gap-4">
-                    <img src={comment.avatar_url || "https://cdn.discord0.png"} alt="Avatar" className="w-8 h-8 rounded-full border border-brand-azure object-cover" />
+                    <img src={comment.avatar_url || "https://cdn.discordapp.com/embed/avatars/0.png"} alt="Avatar" className="w-8 h-8 rounded-full border border-brand-azure object-cover" />
                     <div>
                       <div className="flex items-center gap-3 mb-1">
                         <span className="text-sm font-black text-white">{comment.username}</span>
