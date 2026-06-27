@@ -110,7 +110,7 @@ const AdminDashboard = () => {
         bannerImage: dbGame.banner_url || '',
         videoUrl: dbGame.video_url || '',
         steamScreenshots: dbGame.screenshots || [],
-        releaseDate: dbGame.release_date || '', 
+        releaseDate: dbGame.release_date || '', // Vuoto per permettere all'input di caricarlo correttamente
         isUpcoming: dbGame.is_upcoming || false, 
         steamUrl: dbGame.steam_url || '',
         gogUrl: dbGame.gog_url || '',
@@ -123,6 +123,47 @@ const AdminDashboard = () => {
         platforms: ['windows'],
       }));
       setGames(mappedGames);
+    }
+  };
+
+  // RILEVAMENTO GENERE AUTOMATICO POTENZIATO
+  const fetchGenreFromSteam = async (steamUrl: string): Promise<string[]> => {
+    try {
+      const match = steamUrl.match(/\/app\/(\d+)/);
+      if (!match) return [];
+      
+      const steamId = match[1];
+      const response = await fetch(`https://store.steampowered.com/api/appdetails?appids=${steamId}&l=italian`);
+      if (!response.ok) return [];
+
+      const data = await response.json() as any;
+      if (!data[steamId] || !data[steamId].success || !data[steamId].data.genres) return [];
+
+      const steamGenres = data[steamId].data.genres as { id: string; description: string }[];
+      
+      // Controlliamo i generi combinando la stringa principale e quelle secondarie
+      for (const g of steamGenres) {
+        const desc = g.description.toLowerCase();
+        if (desc.includes('horror')) return ['Horror'];
+        if (desc.includes('survival') || desc.includes('sopravvivenza')) return ['Survival'];
+        if (desc.includes('rpg') || desc.includes('ruolo') || desc.includes('role')) return ['RPG'];
+        if (desc.includes('strateg') || desc.includes('strategy')) return ['Strategy'];
+        if (desc.includes('corsa') || desc.includes('racing') || desc.includes('automobilismo')) return ['Racing'];
+        if (desc.includes('sport')) return ['Sports'];
+        if (desc.includes('combattimento') || desc.includes('fighting')) return ['Fighting'];
+        if (desc.includes('simulaz') || desc.includes('simulation')) return ['Simulation'];
+        if (desc.includes('rompicapo') || desc.includes('puzzle')) return ['Puzzle'];
+        if (desc.includes('platform') || desc.includes('piattaforme')) return ['Platformer'];
+        if (desc.includes('azion') || desc.includes('action') || desc.includes('sparatutto') || desc.includes('shooter')) return ['Action'];
+        if (desc.includes('avventur') || desc.includes('adventure')) return ['Adventure'];
+      }
+
+      if (steamGenres.some(g => g.description.toLowerCase().includes('indie'))) return ['Indie'];
+      
+      return [];
+    } catch (err) {
+      console.error("Impossibile recuperare il genere da Steam:", err);
+      return [];
     }
   };
 
@@ -292,8 +333,8 @@ const AdminDashboard = () => {
       gogUrl: game.gogUrl,
       epicUrl: game.epicUrl,
       goldbergUrl: game.goldbergUrl || '', 
-      minimumRequirements: game.minimumRequirements || '', // Assegnato in modifica
-      recommendedRequirements: game.recommendedRequirements || '', // Assegnato in modifica
+      minimumRequirements: game.minimumRequirements || '', 
+      recommendedRequirements: game.recommendedRequirements || '', 
       tags: [...(game.tags || [])],
       genres: [...(game.genres || [])],
       platforms: [...(game.platforms || [])]
@@ -308,6 +349,7 @@ const AdminDashboard = () => {
       ? activeGame.genres[0] 
       : null;
 
+    // Se la data inserita è vuota, viene inserita come NULL
     const payload = {
       title: activeGame.title?.trim() || 'Untitled Game',
       description: activeGame.description || '',
@@ -322,8 +364,8 @@ const AdminDashboard = () => {
       gog_url: activeGame.gogUrl || null,
       epic_url: activeGame.epicUrl || null,
       goldberg_url: activeGame.goldbergUrl || null,
-      minimum_requirements: activeGame.minimumRequirements || null, // Aggiunto al payload
-      recommended_requirements: activeGame.recommendedRequirements || null, // Aggiunto al payload
+      minimum_requirements: activeGame.minimumRequirements || null, 
+      recommended_requirements: activeGame.recommendedRequirements || null, 
       genre: singleGenreString 
     };
 
@@ -405,6 +447,18 @@ const AdminDashboard = () => {
   const removeScreenshot = (index: number) => {
     const filtered = (activeGame.steamScreenshots || []).filter((_, i) => i !== index);
     setActiveGame({ ...activeGame, steamScreenshots: filtered });
+  };
+
+  // Helper sicuro per mostrare la data di rilascio o "TBA" nella lista di destra dell'Admin
+  const getFormattedAdminDate = (dateStr: string) => {
+    if (!dateStr || dateStr.trim() === '') return 'TBA';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return 'TBA';
+      return d.toLocaleDateString('it-IT');
+    } catch {
+      return 'TBA';
+    }
   };
 
   if (!session) {
@@ -714,6 +768,8 @@ const AdminDashboard = () => {
                     <div className="flex gap-3 mt-1">
                       <span className="text-[10px] text-gray-500">{game.steamScreenshots?.length || 0} Screenshots</span>
                       {game.videoUrl && <span className="text-[10px] text-brand-azure font-bold">VIDEO ACTIVE</span>}
+                      {/* Mostra la data formattata o TBA nel riepilogo Admin di destra */}
+                      <span className="text-[10px] text-gray-500">Date: {getFormattedAdminDate(game.releaseDate)}</span>
                       {game.genres && game.genres.length > 0 && (
                         <span className="text-[10px] bg-brand-dark border border-brand-border text-gray-400 px-2 rounded uppercase font-black tracking-wider">
                           {game.genres[0]}

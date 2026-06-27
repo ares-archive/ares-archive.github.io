@@ -61,6 +61,15 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
             (userLang === 'es' && (dbGame as any).description_es) ? (dbGame as any).description_es : 
             dbGame.description;
 
+          // Se non c'è una data nel database, il valore di fallback diventa automaticamente "TBA"
+          const formattedReleaseDate = dbGame.release_date
+            ? new Date(dbGame.release_date).toLocaleDateString('it-IT', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })
+            : 'TBA';
+
           return {
             id: dbGame.id.toString(),
             title: title || '',
@@ -74,7 +83,7 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
             tags: ['New'],
             genres: dbGame.genres || [], 
             platforms: ['windows'],
-            releaseDate: dbGame.release_date || dbGame.created_at || new Date().toLocaleDateString(),
+            releaseDate: formattedReleaseDate, // Utilizza il valore formattato con fallback TBA
           };
         });
         
@@ -164,7 +173,7 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 bg-[#5865F2] hover:bg-[#4752C4] text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-[#5865F2]/20 hover:shadow-[#5865F2]/30 transform hover:-translate-y-0.5 active:translate-y-0 text-center"
             >
-              {/* Modifica qui: filtro drop-shadow applicato ai contorni trasparenti del PNG */}
+              {/* Filtro drop-shadow applicato ai contorni trasparenti del PNG */}
               <DiscordIcon 
                 className="w-4 h-4" 
                 style={{ filter: 'drop-shadow(1px 0px 0px black) drop-shadow(-1px 0px 0px black) drop-shadow(0px 1px 0px black) drop-shadow(0px -1px 0px black)' }} 
