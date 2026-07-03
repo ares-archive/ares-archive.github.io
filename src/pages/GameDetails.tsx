@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion'; 
-import { 
-  ArrowLeft, 
-  Download, 
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  ArrowLeft,
+  Download,
   ShieldCheck,
   Calendar,
   Layers,
@@ -17,7 +17,8 @@ import {
   ChevronRight,
   Maximize2,
   X,
-  Cpu
+  Cpu,
+  Flag
 } from 'lucide-react';
 import { supabase } from '../supabase'; 
 import { Game } from '../types/game';
@@ -110,6 +111,12 @@ const GameDetails: React.FC = () => {
   const [newComment, setNewComment] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // Stati per il sistema di report
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reportDescription, setReportDescription] = useState('');
+  const [submittingReport, setSubmittingReport] = useState(false);
 
   const fetchComments = async () => {
     if (!id) return;
@@ -297,9 +304,37 @@ const GameDetails: React.FC = () => {
       alert(t('gameDetails.commentError'));
     } else {
       setNewComment('');
-      fetchComments(); 
+      fetchComments();
     }
     setSubmittingComment(false);
+  };
+
+  const handleSubmitReport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reportReason.trim() || !id) return;
+    setSubmittingReport(true);
+
+    const { error } = await supabase
+      .from('reports')
+      .insert([
+        {
+          user_id: currentUser?.id || null,
+          game_id: parseInt(id, 10),
+          reason: reportReason,
+          description: reportDescription
+        }
+      ]);
+
+    if (error) {
+      console.error("Errore durante l'invio del report:", error);
+      alert('Error submitting report');
+    } else {
+      alert('Report submitted successfully');
+      setShowReportModal(false);
+      setReportReason('');
+      setReportDescription('');
+    }
+    setSubmittingReport(false);
   };
 
   // Funzione helper intelligente per formattare HTML o testo semplice dei requisiti di Steam
@@ -567,6 +602,15 @@ const GameDetails: React.FC = () => {
                     <span className="text-white font-black">{game.developer}</span>
                   </div>
 
+                  {/* Report Button */}
+                  <button
+                    onClick={() => setShowReportModal(true)}
+                    className="w-full py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider"
+                  >
+                    <Flag className="w-4 h-4" />
+                    Report Broken Game
+                  </button>
+
                   {/* PRESERVATION & EMULATION SOURCES */}
                   <div className="pt-8 border-t border-brand-border space-y-3">
                     <span className="text-[10px] font-black text-[#5865F2] uppercase tracking-widest block mb-2">{t('gameDetails.preservationSources')}</span>
@@ -619,6 +663,72 @@ const GameDetails: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* REPORT MODAL */}
+      <AnimatePresence>
+        {showReportModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center p-4"
+            onClick={() => setShowReportModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-brand-card border border-brand-border rounded-2xl p-8 max-w-md w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-2xl font-black text-white mb-6 uppercase">Report Broken Game</h3>
+              <form onSubmit={handleSubmitReport} className="space-y-4">
+                <div>
+                  <label className="text-sm font-bold text-gray-400 mb-2 block">Reason</label>
+                  <select
+                    value={reportReason}
+                    onChange={(e) => setReportReason(e.target.value)}
+                    className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-azure"
+                    required
+                  >
+                    <option value="">Select a reason</option>
+                    <option value="Link not working">Download link not working</option>
+                    <option value="Wrong file">Wrong file uploaded</option>
+                    <option value="Missing files">Missing files</option>
+                    <option value="Corrupted file">Corrupted file</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-bold text-gray-400 mb-2 block">Description (optional)</label>
+                  <textarea
+                    value={reportDescription}
+                    onChange={(e) => setReportDescription(e.target.value)}
+                    className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-azure h-32 resize-none"
+                    placeholder="Provide more details about the issue..."
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowReportModal(false)}
+                    className="flex-1 py-3 bg-brand-border text-gray-400 font-black rounded-xl hover:bg-gray-700 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingReport}
+                    className="flex-1 py-3 bg-red-500 text-white font-black rounded-xl hover:bg-red-600 transition-all disabled:opacity-50"
+                  >
+                    {submittingReport ? 'Submitting...' : 'Submit Report'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* FULLSCREEN MODAL CON SENSOR OVERLAY */}
       <AnimatePresence>
