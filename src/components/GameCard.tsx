@@ -20,14 +20,13 @@ const GameCardComponent: React.FC<GameCardProps> = ({ game }) => {
         .select('*')
         .eq('user_id', userId)
         .eq('game_id', parseInt(gameId))
-        .maybeSingle(); // Usa maybeSingle invece di single per gestire il caso "not found"
+        .maybeSingle();
       
       if (error) {
-        // Logga solo errori reali, non "not found"
         if (error.code !== 'PGRST116') {
           console.error('Favorite check error:', error);
         }
-        setIsFavorite(false); // Se c'è errore, assume non è preferito
+        setIsFavorite(false);
         return;
       }
       
@@ -48,6 +47,7 @@ const GameCardComponent: React.FC<GameCardProps> = ({ game }) => {
 
   const toggleFavorite = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault();
+    
     if (!currentUser) {
       alert('Connect with Discord to save favorites');
       return;
