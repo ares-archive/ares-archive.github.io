@@ -20,18 +20,21 @@ const GameCardComponent: React.FC<GameCardProps> = ({ game }) => {
         .select('*')
         .eq('user_id', userId)
         .eq('game_id', parseInt(gameId))
-        .single();
+        .maybeSingle(); // Usa maybeSingle invece di single per gestire il caso "not found"
       
       if (error) {
-        // Silenzia errori 406 e altri errori di rete senza rompere la funzionalità
-        console.debug('Favorite check error (silenced):', error);
+        // Logga solo errori reali, non "not found"
+        if (error.code !== 'PGRST116') {
+          console.error('Favorite check error:', error);
+        }
+        setIsFavorite(false); // Se c'è errore, assume non è preferito
         return;
       }
       
       setIsFavorite(!!data);
     } catch (error) {
-      // Silenzia qualsiasi errore per evitare spam nella console
-      console.debug('Favorite check exception (silenced):', error);
+      console.error('Favorite check exception:', error);
+      setIsFavorite(false);
     }
   }, []);
 
@@ -59,7 +62,8 @@ const GameCardComponent: React.FC<GameCardProps> = ({ game }) => {
           .eq('game_id', parseInt(game.id));
         
         if (error) {
-          console.debug('Favorite remove error (silenced):', error);
+          console.error('Favorite remove error:', error);
+          alert('Failed to remove favorite. Please try again.');
           return;
         }
         
@@ -70,14 +74,16 @@ const GameCardComponent: React.FC<GameCardProps> = ({ game }) => {
           .insert([{ user_id: currentUser.id, game_id: parseInt(game.id) }]);
         
         if (error) {
-          console.debug('Favorite add error (silenced):', error);
+          console.error('Favorite add error:', error);
+          alert('Failed to add favorite. Please try again.');
           return;
         }
         
         setIsFavorite(true);
       }
     } catch (error) {
-      console.debug('Favorite toggle exception (silenced):', error);
+      console.error('Favorite toggle exception:', error);
+      alert('An error occurred. Please try again.');
     }
   }, [currentUser, isFavorite, game.id]);
 
