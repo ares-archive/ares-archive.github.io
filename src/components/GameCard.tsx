@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
@@ -9,19 +9,11 @@ interface GameCardProps {
   game: Game;
 }
 
-export const GameCard: React.FC<GameCardProps> = ({ game }) => {
+const GameCardComponent: React.FC<GameCardProps> = ({ game }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  useEffect(() => {
-    const userStr = localStorage.getItem('ares_discord_user');
-    if (userStr) {
-      setCurrentUser(JSON.parse(userStr));
-      checkFavorite(JSON.parse(userStr).id, game.id);
-    }
-  }, [game.id]);
-
-  const checkFavorite = async (userId: string, gameId: string) => {
+  const checkFavorite = useCallback(async (userId: string, gameId: string) => {
     const { data } = await supabase
       .from('favorites')
       .select('*')
@@ -29,9 +21,17 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
       .eq('game_id', parseInt(gameId))
       .single();
     setIsFavorite(!!data);
-  };
+  }, []);
 
-  const toggleFavorite = async (e: React.MouseEvent) => {
+  useEffect(() => {
+    const userStr = localStorage.getItem('ares_discord_user');
+    if (userStr) {
+      setCurrentUser(JSON.parse(userStr));
+      checkFavorite(JSON.parse(userStr).id, game.id);
+    }
+  }, [game.id, checkFavorite]);
+
+  const toggleFavorite = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault();
     if (!currentUser) {
       alert('Connect with Discord to save favorites');
@@ -51,7 +51,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
         .insert([{ user_id: currentUser.id, game_id: parseInt(game.id) }]);
       setIsFavorite(true);
     }
-  };
+  }, [currentUser, isFavorite, game.id]);
 
   return (
     <motion.div
@@ -100,3 +100,5 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
     </motion.div>
   );
 };
+
+export const GameCard = memo(GameCardComponent);

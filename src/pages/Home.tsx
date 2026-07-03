@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { GameCard } from '../components/GameCard';
 import { supabase } from '../supabase'; 
 import { Game } from '../types/game';
@@ -40,7 +40,7 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
   const [visibleLimit, setVisibleLimit] = useState(24);
 
   // Mappatura generi italiano -> inglese per normalizzazione
-  const normalizeGenre = (genre: string): string => {
+  const normalizeGenre = useCallback((genre: string): string => {
     const genreMap: { [key: string]: string } = {
       'Azione': 'Action',
       'Avventura': 'Adventure',
@@ -52,7 +52,7 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
       'Strategy': 'Strategy'
     };
     return genreMap[genre] || genre;
-  };
+  }, []);
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -118,17 +118,29 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
     fetchGames();
   }, [lang]);
 
-  const archivedGames = games.filter(game => !game.isUpcoming && game.title.toLowerCase().includes(searchQuery.toLowerCase()));
-  const upcomingGames = games.filter(game => game.isUpcoming && game.title.toLowerCase().includes(searchQuery.toLowerCase()));
+  // Ottimizzazione con useMemo per evitare ricalcoli dei filtri
+  const archivedGames = useMemo(() => 
+    games.filter(game => !game.isUpcoming && game.title.toLowerCase().includes(searchQuery.toLowerCase())),
+    [games, searchQuery]
+  );
 
-  const filteredArchivedGames = archivedGames.filter(game => {
-    if (activeFilter === 'All') return true;
+  const upcomingGames = useMemo(() => 
+    games.filter(game => game.isUpcoming && game.title.toLowerCase().includes(searchQuery.toLowerCase())),
+    [games, searchQuery]
+  );
+
+  const filteredArchivedGames = useMemo(() => {
+    if (activeFilter === 'All') return archivedGames;
     const normalizedFilter = normalizeGenre(activeFilter);
-    console.log('Filter:', activeFilter, 'Normalized:', normalizedFilter, 'Game genres:', game.genres);
-    return game.genres?.some(genre => normalizeGenre(genre) === normalizedFilter);
-  });
+    return archivedGames.filter(game => 
+      game.genres?.some(genre => normalizeGenre(genre) === normalizedFilter)
+    );
+  }, [archivedGames, activeFilter, normalizeGenre]);
 
-  const displayedArchivedGames = filteredArchivedGames.slice(0, visibleLimit);
+  const displayedArchivedGames = useMemo(() => 
+    filteredArchivedGames.slice(0, visibleLimit),
+    [filteredArchivedGames, visibleLimit]
+  );
 
   if (loading) {
     return (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, User, LogOut, Shield, Sun, Moon } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -30,7 +30,7 @@ const checkIsDeveloper = (user: any): boolean => {
   return allowedDevs.includes(username) || allowedDevs.includes(globalName);
 };
 
-export const Header: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleTheme }) => {
+const HeaderComponent: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleTheme }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useLanguage();
@@ -52,16 +52,16 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleTheme 
     };
   }, []);
 
-  const handleDiscordConnect = () => {
+  const handleDiscordConnect = useCallback(() => {
     window.location.href = "https://discord.com/oauth2/authorize?client_id=1518053081919520799&response_type=code&redirect_uri=https%3A%2F%2Fares-archive.github.io%2Fdiscord-callback&scope=identify";
-  };
+  }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     localStorage.removeItem('ares_discord_user');
     localStorage.removeItem('ares_admin_token');
     setDiscordUser(null);
     navigate('/');
-  };
+  }, [navigate]);
 
   return (
     <header className={clsx(
@@ -154,3 +154,5 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleTheme 
     </header>
   );
 };
+
+export const Header = memo(HeaderComponent);

@@ -1,17 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Header } from './components/Header';
-import Home from './pages/Home';
-import GameDetails from './pages/GameDetails';
-import About from './pages/About';
-import Legal from './pages/Legal';
-import Privacy from './pages/Privacy';
-import AdminDashboard from './pages/AdminDashboard';
-import DiscordCallback from './pages/DiscordCallback';
-import Requests from './pages/Requests'; // Import Requests
-import Hypervisor from './pages/Hypervisor'; // Import per Hypervisor Crack
 import { useLanguage } from './i18n/LanguageContext';
 import { useBackgroundTheme } from './theme/BackgroundThemeContext';
+import { Loader2 } from 'lucide-react';
+
+// Lazy loading delle pagine per ridurre il bundle iniziale
+const Home = lazy(() => import('./pages/Home'));
+const GameDetails = lazy(() => import('./pages/GameDetails'));
+const About = lazy(() => import('./pages/About'));
+const Legal = lazy(() => import('./pages/Legal'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const DiscordCallback = lazy(() => import('./pages/DiscordCallback'));
+const Requests = lazy(() => import('./pages/Requests'));
+const Hypervisor = lazy(() => import('./pages/Hypervisor'));
+
+// Componente di loading per Suspense
+const PageLoader = () => (
+  <div className="flex flex-col items-center justify-center min-h-[60vh]">
+    <Loader2 className="w-12 h-12 text-brand-azure animate-spin mb-4" />
+    <p className="text-gray-400 animate-pulse">Loading...</p>
+  </div>
+);
 
 function App() {
   const spaRedirect = new URLSearchParams(window.location.search).get('spa-redirect');
@@ -35,17 +46,19 @@ function App() {
       <div className={`ares-bg-theme min-h-screen bg-brand-dark text-white selection:bg-brand-azure selection:text-white ${isDark ? 'theme-dark' : 'theme-light'}`} data-bg-theme={bgTheme}>
         <Header onSearch={setSearchQuery} isDark={isDark} onToggleTheme={() => setIsDark(value => !value)} />
         <main className="min-h-[80vh]">
-          <Routes>
-            <Route path="/" element={<Home searchQuery={searchQuery} />} />
-            <Route path="/game/:id" element={<GameDetails />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/legal" element={<Legal />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/discord-callback" element={<DiscordCallback />} />
-            <Route path="/requests" element={<Requests />} /> {/* Nuova rotta */}
-            <Route path="/hypervisor" element={<Hypervisor />} /> {/* Rotta Hypervisor corretta */}
-          </Routes>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<Home searchQuery={searchQuery} />} />
+              <Route path="/game/:id" element={<GameDetails />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/legal" element={<Legal />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/discord-callback" element={<DiscordCallback />} />
+              <Route path="/requests" element={<Requests />} />
+              <Route path="/hypervisor" element={<Hypervisor />} />
+            </Routes>
+          </Suspense>
         </main>
         
         <footer className="border-t border-brand-border py-16 bg-brand-dark">
