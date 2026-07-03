@@ -80,7 +80,7 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
 
           // Se non c'è una data nel database, il valore di fallback diventa automaticamente "TBA"
           const formattedReleaseDate = dbGame.release_date
-            ? new Date(dbGame.release_date).toLocaleDateString('it-IT', {
+            ? new Date(dbGame.release_date).toLocaleDateString(userLang === 'it' ? 'it-IT' : 'en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'

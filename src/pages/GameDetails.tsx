@@ -92,7 +92,7 @@ const getYouTubeThumbnail = (url: string): string | null => {
 
 const GameDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [game, setGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(true); 
 
@@ -147,7 +147,7 @@ const GameDetails: React.FC = () => {
           try {
             const parsedDate = new Date(data.release_date);
             if (!isNaN(parsedDate.getTime())) {
-              formattedReleaseDate = parsedDate.toLocaleDateString('it-IT', {
+              formattedReleaseDate = parsedDate.toLocaleDateString(lang === 'it' ? 'it-IT' : 'en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
