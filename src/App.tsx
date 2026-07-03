@@ -10,6 +10,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import DiscordCallback from './pages/DiscordCallback';
 import Requests from './pages/Requests'; // Import Requests
 import Hypervisor from './pages/Hypervisor'; // Import per Hypervisor Crack
+import { useLanguage } from './i18n/LanguageContext';
+import { useBackgroundTheme } from './theme/BackgroundThemeContext';
 
 function App() {
   const spaRedirect = new URLSearchParams(window.location.search).get('spa-redirect');
@@ -19,6 +21,8 @@ function App() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isDark, setIsDark] = useState(() => localStorage.getItem('ares_theme') !== 'light');
+  const { t } = useLanguage();
+  const { bgTheme } = useBackgroundTheme();
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
@@ -28,7 +32,7 @@ function App() {
   return (
     // Rimosso il basename perché ora siamo sulla root del dominio di ares-archive
     <Router>
-      <div className={`min-h-screen bg-brand-dark text-white selection:bg-brand-azure selection:text-white ${isDark ? 'theme-dark' : 'theme-light'}`}>
+      <div className={`ares-bg-theme min-h-screen bg-brand-dark text-white selection:bg-brand-azure selection:text-white ${isDark ? 'theme-dark' : 'theme-light'}`} data-bg-theme={bgTheme}>
         <Header onSearch={setSearchQuery} isDark={isDark} onToggleTheme={() => setIsDark(value => !value)} />
         <main className="min-h-[80vh]">
           <Routes>
@@ -57,18 +61,18 @@ function App() {
               </div>
               
               <div className="flex flex-wrap justify-center gap-8 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
-                <Link to="/legal" className="hover:text-brand-azure transition-colors">Legal</Link>
-                <Link to="/privacy" className="hover:text-brand-azure transition-colors">Privacy</Link>
-                <Link to="/about" className="hover:text-brand-azure transition-colors">About</Link>
-                <Link to="/requests" className="hover:text-brand-azure transition-colors">Requests</Link>
-                <Link to="/hypervisor" className="hover:text-brand-azure transition-colors">Hypervisor Crack</Link> {/* Nuovo link nel Footer */}
+                <Link to="/legal" className="hover:text-brand-azure transition-colors">{t('footer.legal')}</Link>
+                <Link to="/privacy" className="hover:text-brand-azure transition-colors">{t('footer.privacy')}</Link>
+                <Link to="/about" className="hover:text-brand-azure transition-colors">{t('footer.about')}</Link>
+                <Link to="/requests" className="hover:text-brand-azure transition-colors">{t('footer.requests')}</Link>
+                <Link to="/hypervisor" className="hover:text-brand-azure transition-colors">{t('footer.hypervisor')}</Link> {/* Nuovo link nel Footer */}
                 <a 
                   href="https://discord.gg/sqkxTDqqBj" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="hover:text-[#5865F2] transition-colors"
                 >
-                  Discord
+                  {t('footer.discord')}
                 </a>
                 <a 
                   href="https://ko-fi.com/aresarchive" 
@@ -76,12 +80,12 @@ function App() {
                   rel="noopener noreferrer" 
                   className="hover:text-[#FF5E5B] transition-colors"
                 >
-                  Ko-fi
+                  {t('footer.kofi')}
                 </a>
               </div>
 
               <p className="text-gray-700 text-[10px] font-bold uppercase tracking-widest">
-                EST. 2025 • DIGITAL PRESERVATION
+                {t('footer.est')}
               </p>
             </div>
           </div>

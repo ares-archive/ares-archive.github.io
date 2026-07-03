@@ -92,3 +92,84 @@
 ::-webkit-scrollbar-thumb {
   @apply bg-brand-border rounded-full hover:bg-gray-600 transition-colors;
 }
+
+/* ============================================================
+   BACKGROUND THEMES
+   Sfondi personalizzati e unici, selezionabili dal ThemeSelector
+   nell'header. Ogni tema aggiunge un layer decorativo fisso
+   dietro ai contenuti tramite ::before sul wrapper .ares-bg-theme.
+   Il layer non intercetta il mouse (pointer-events: none) ed è
+   sempre dietro al contenuto (z-index negativo).
+   ============================================================ */
+
+.ares-bg-theme {
+  position: relative;
+  isolation: isolate;
+}
+
+.ares-bg-theme::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+
+/* ARES Default: la griglia sottile originale, discreta */
+.ares-bg-theme[data-bg-theme='ares-default']::before {
+  background-image:
+    linear-gradient(rgba(0, 123, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 123, 255, 0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Azure Grid: griglia blu più marcata con vignette radiale */
+.ares-bg-theme[data-bg-theme='azure-grid']::before {
+  background-image:
+    radial-gradient(circle at 20% 15%, rgba(0, 123, 255, 0.16), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(0, 123, 255, 0.10), transparent 50%),
+    linear-gradient(rgba(0, 123, 255, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 123, 255, 0.09) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+}
+
+/* Crimson Protocol: bagliori rossi diagonali stile "alert" */
+.ares-bg-theme[data-bg-theme='crimson-protocol']::before {
+  background-image:
+    radial-gradient(circle at 10% 10%, rgba(220, 53, 69, 0.18), transparent 40%),
+    radial-gradient(circle at 90% 20%, rgba(220, 53, 69, 0.12), transparent 45%),
+    radial-gradient(circle at 50% 100%, rgba(220, 53, 69, 0.10), transparent 55%),
+    repeating-linear-gradient(135deg, rgba(220, 53, 69, 0.045) 0px, rgba(220, 53, 69, 0.045) 1px, transparent 1px, transparent 26px);
+}
+
+/* Emerald Terminal: effetto "matrix" con scanline verdi */
+.ares-bg-theme[data-bg-theme='emerald-terminal']::before {
+  background-image:
+    linear-gradient(rgba(40, 167, 69, 0.08) 1px, transparent 1px),
+    repeating-linear-gradient(0deg, rgba(40, 167, 69, 0.05) 0px, rgba(40, 167, 69, 0.05) 1px, transparent 1px, transparent 3px),
+    radial-gradient(circle at 50% 0%, rgba(40, 167, 69, 0.14), transparent 60%);
+  background-size: 100% 42px, 100% 100%, 100% 100%;
+}
+
+/* Nebula Violet: nebulosa morbida viola/blu */
+.ares-bg-theme[data-bg-theme='nebula']::before {
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(124, 58, 237, 0.22), transparent 45%),
+    radial-gradient(circle at 85% 30%, rgba(0, 123, 255, 0.16), transparent 50%),
+    radial-gradient(circle at 50% 90%, rgba(124, 58, 237, 0.14), transparent 55%);
+}
+
+/* Sunset Archive: gradiente caldo arancio/rosa in basso */
+.ares-bg-theme[data-bg-theme='sunset-archive']::before {
+  background-image:
+    radial-gradient(circle at 50% 120%, rgba(255, 120, 73, 0.22), transparent 55%),
+    radial-gradient(circle at 10% 0%, rgba(255, 94, 91, 0.10), transparent 45%),
+    radial-gradient(circle at 90% 10%, rgba(0, 123, 255, 0.08), transparent 45%);
+}
+
+/* In tema chiaro riduciamo l'opacità dei layer per mantenere leggibilità */
+.theme-light.ares-bg-theme::before {
+  opacity: 0.55;
+}

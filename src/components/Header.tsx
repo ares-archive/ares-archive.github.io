@@ -3,6 +3,9 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, User, LogOut, Shield, Sun, Moon } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
+import { useLanguage } from '../i18n/LanguageContext';
+import { LanguageSelector } from './LanguageSelector';
+import { ThemeSelector } from './ThemeSelector';
 
 interface HeaderProps {
   onSearch: (query: string) => void;
@@ -30,6 +33,7 @@ const checkIsDeveloper = (user: any): boolean => {
 export const Header: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleTheme }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useLanguage();
   const [discordUser, setDiscordUser] = useState<any>(null);
   const isAdmin = localStorage.getItem('ares_admin_token') === 'ares-secret-token';
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -84,7 +88,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleTheme 
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <input
             type="text"
-            placeholder="Search ARES database..."
+            placeholder={t('header.searchPlaceholder')}
             onChange={(e) => onSearch(e.target.value)}
             className={clsx(
               "w-full border rounded-xl py-2.5 pl-12 pr-4 text-sm focus:outline-none focus:ring-2 transition-all",
@@ -96,6 +100,9 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleTheme 
         </motion.div>
 
         <nav className="flex items-center gap-2 md:gap-6">
+          <ThemeSelector isDark={isDark} />
+          <LanguageSelector isDark={isDark} />
+
           <button 
             onClick={onToggleTheme}
             className="p-2 rounded-lg hover:bg-gray-500/10 transition-colors"
@@ -103,13 +110,13 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleTheme 
             {isDark ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-brand-dark" />}
           </button>
 
-          <Link to="/about" className="text-sm font-semibold hover:text-brand-azure transition-colors opacity-70 hidden md:block">About</Link>
+          <Link to="/about" className="text-sm font-semibold hover:text-brand-azure transition-colors opacity-70 hidden md:block">{t('header.about')}</Link>
           
           {/* Link Requests */}
-          <Link to="/requests" className="text-sm font-semibold hover:text-brand-azure transition-colors opacity-70 hidden md:block">Requests</Link>
+          <Link to="/requests" className="text-sm font-semibold hover:text-brand-azure transition-colors opacity-70 hidden md:block">{t('header.requests')}</Link>
           
           {/* Link Hypervisor Crack aggiunto con lo stesso stile visivo */}
-          <Link to="/hypervisor" className="text-sm font-semibold hover:text-brand-azure transition-colors opacity-70 hidden md:block">Hypervisor Crack</Link>
+          <Link to="/hypervisor" className="text-sm font-semibold hover:text-brand-azure transition-colors opacity-70 hidden md:block">{t('header.hypervisor')}</Link>
           
           {isAdmin && isAdminRoute && (
             <Link to="/admin" className="p-2 text-brand-azure hover:bg-brand-azure/10 rounded-lg transition-colors">
@@ -125,7 +132,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleTheme 
               {/* Badge "DEVELOPER" Esclusivo per te e i tuoi collaboratori autorizzati */}
               {checkIsDeveloper(discordUser) && (
                 <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-widest bg-brand-azure/20 border border-brand-azure/40 text-brand-azure rounded shadow-lg shadow-brand-azure/5 select-none shrink-0 hidden md:inline-block">
-                  Developer
+                  {t('header.developerBadge')}
                 </span>
               )}
               
@@ -139,7 +146,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleTheme 
               className="flex items-center gap-2 px-4 py-2 bg-[#5865F2] hover:bg-[#4752C4] text-white text-xs font-bold rounded-lg transition-all uppercase tracking-wider shadow-lg shadow-indigo-500/10"
             >
               <User className="w-4 h-4" />
-              Connect
+              {t('header.connect')}
             </button>
           )}
         </nav>

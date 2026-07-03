@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Clock
 } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 // Icona Steam ufficiale vettoriale
 const SteamIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -26,6 +27,7 @@ const SteamIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 );
 
 const Requests: React.FC = () => {
+  const { t } = useLanguage();
   const [appId, setAppId] = useState('');
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
@@ -80,14 +82,14 @@ const Requests: React.FC = () => {
       const elapsed = Date.now() - parseInt(lastRequest, 10);
       if (elapsed < 60000) {
         setSubmitStatus('error');
-        setErrorMessage(`Anti-spam cooling down. Please wait ${Math.ceil((60000 - elapsed) / 1000)} seconds.`);
+        setErrorMessage(t('requests.errCooldown', { seconds: Math.ceil((60000 - elapsed) / 1000) }));
         return;
       }
     }
 
     if (!appId || !title) {
       setSubmitStatus('error');
-      setErrorMessage('Please fill in both the Steam AppID and the Game Title.');
+      setErrorMessage(t('requests.errFillFields'));
       return;
     }
 
@@ -125,7 +127,7 @@ const Requests: React.FC = () => {
     } catch (err: any) {
       console.error('Error submitting request:', err);
       setSubmitStatus('error');
-      setErrorMessage(err.message || 'Failed to submit request. Please ensure the database schema is configured.');
+      setErrorMessage(err.message || t('requests.errGeneric'));
     } finally {
       setIsSubmitting(false);
     }
@@ -137,10 +139,10 @@ const Requests: React.FC = () => {
       <div className="mb-12 text-center md:text-left">
         <h1 className="text-4xl font-black text-white uppercase italic tracking-tight mb-3 flex items-center justify-center md:justify-start gap-3">
           <Gamepad2 className="w-10 h-10 text-brand-azure" />
-          Game Preservation Queue
+          {t('requests.title')}
         </h1>
         <p className="text-gray-400 max-w-2xl text-lg">
-          Submit missing titles to our digital preservation database. Provide the correct Steam AppID to guarantee precise metadata archiving.
+          {t('requests.subtitle')}
         </p>
       </div>
 
@@ -149,7 +151,7 @@ const Requests: React.FC = () => {
         <div className="lg:col-span-7 bg-brand-card border border-brand-border rounded-2xl p-6 md:p-8 shadow-xl relative">
           <h2 className="text-xl font-bold text-white mb-6 uppercase tracking-wider flex items-center gap-2">
             <Send className="w-5 h-5 text-brand-azure" />
-            Submit Preservation Request
+            {t('requests.formTitle')}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -157,12 +159,12 @@ const Requests: React.FC = () => {
             <div>
               <label htmlFor="appId" className="block text-xs font-black uppercase text-gray-400 tracking-wider mb-2 flex items-center gap-1.5">
                 <SteamIcon className="w-3.5 h-3.5" />
-                Steam AppID or Store URL <span className="text-brand-azure">*</span>
+                {t('requests.appIdLabel')} <span className="text-brand-azure">*</span>
               </label>
               <input
                 id="appId"
                 type="text"
-                placeholder="Paste Steam game link or enter AppID (e.g. 1245620)"
+                placeholder={t('requests.appIdPlaceholder')}
                 value={appId}
                 onChange={handleAppIdInput}
                 className="w-full px-4 py-3 bg-brand-dark border border-brand-border rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand-azure transition-colors"
@@ -170,7 +172,7 @@ const Requests: React.FC = () => {
                 disabled={cooldownTimeLeft > 0}
               />
               <p className="text-[10px] text-gray-500 mt-1.5">
-                We automatically parse full Steam links. If valid, the AppID is extracted instantly.
+                {t('requests.appIdHelp')}
               </p>
               {appId && (
                 <a
@@ -179,7 +181,7 @@ const Requests: React.FC = () => {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-xs text-brand-azure mt-2 hover:underline"
                 >
-                  Verify AppID on Steam <ExternalLink className="w-3 h-3" />
+                  {t('requests.verifyOnSteam')} <ExternalLink className="w-3 h-3" />
                 </a>
               )}
             </div>
@@ -187,12 +189,12 @@ const Requests: React.FC = () => {
             {/* Game Title Input */}
             <div>
               <label htmlFor="title" className="block text-xs font-black uppercase text-gray-400 tracking-wider mb-2">
-                Game Title <span className="text-brand-azure">*</span>
+                {t('requests.titleLabel')} <span className="text-brand-azure">*</span>
               </label>
               <input
                 id="title"
                 type="text"
-                placeholder="Enter exact game title"
+                placeholder={t('requests.titlePlaceholder')}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full px-4 py-3 bg-brand-dark border border-brand-border rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand-azure transition-colors"
@@ -204,31 +206,31 @@ const Requests: React.FC = () => {
             {/* Optional Discord Tag */}
             <div>
               <label htmlFor="discordTag" className="block text-xs font-black uppercase text-gray-400 tracking-wider mb-2">
-                Discord Username (Optional)
+                {t('requests.discordLabel')}
               </label>
               <input
                 id="discordTag"
                 type="text"
-                placeholder="e.g. username"
+                placeholder={t('requests.discordPlaceholder')}
                 value={discordTag}
                 onChange={(e) => setDiscordTag(e.target.value)}
                 className="w-full px-4 py-3 bg-brand-dark border border-brand-border rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand-azure transition-colors"
                 disabled={cooldownTimeLeft > 0}
               />
               <p className="text-[10px] text-gray-500 mt-1.5">
-                We use this to credit your request or ping you on the ARES server once archived.
+                {t('requests.discordHelp')}
               </p>
             </div>
 
             {/* Additional Preservation Notes */}
             <div>
               <label htmlFor="notes" className="block text-xs font-black uppercase text-gray-400 tracking-wider mb-2">
-                Preservation Notes / Context (Optional)
+                {t('requests.notesLabel')}
               </label>
               <textarea
                 id="notes"
                 rows={4}
-                placeholder="Detail why this game requires preservation (e.g. digital-only release, DRM concerns, delisting alert, DLCs details)"
+                placeholder={t('requests.notesPlaceholder')}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="w-full px-4 py-3 bg-brand-dark border border-brand-border rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand-azure transition-colors resize-none"
@@ -241,9 +243,9 @@ const Requests: React.FC = () => {
               <div className="flex items-start gap-3 p-4 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-xl animate-fade-in">
                 <Clock className="w-5 h-5 shrink-0 mt-0.5 animate-pulse" />
                 <div>
-                  <h4 className="font-bold text-sm text-white">Rate Limit Active</h4>
+                  <h4 className="font-bold text-sm text-white">{t('requests.rateLimitTitle')}</h4>
                   <p className="text-xs text-gray-400 mt-1">
-                    To prevent spam and server flooding, you must wait {cooldownTimeLeft} more seconds before submitting another request.
+                    {t('requests.rateLimitText', { seconds: cooldownTimeLeft })}
                   </p>
                 </div>
               </div>
@@ -258,17 +260,17 @@ const Requests: React.FC = () => {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Submitting Request...
+                  {t('requests.submitting')}
                 </>
               ) : cooldownTimeLeft > 0 ? (
                 <>
                   <Clock className="w-4 h-4" />
-                  Wait {cooldownTimeLeft}s (Cooldown Active)
+                  {t('requests.waitCooldown', { seconds: cooldownTimeLeft })}
                 </>
               ) : (
                 <>
                   <Send className="w-4 h-4" />
-                  Submit to Preservation Queue
+                  {t('requests.submit')}
                 </>
               )}
             </button>
@@ -278,9 +280,9 @@ const Requests: React.FC = () => {
               <div className="flex items-start gap-3 p-4 bg-green-500/10 border border-green-500/20 text-green-400 rounded-xl">
                 <CheckCircle className="w-5 h-5 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-bold text-sm text-white">Request Submitted!</h4>
+                  <h4 className="font-bold text-sm text-white">{t('requests.successTitle')}</h4>
                   <p className="text-xs text-gray-400 mt-1">
-                    Your request was added to the queue. Please wait at least 1 minute before submitting any further requests.
+                    {t('requests.successText')}
                   </p>
                 </div>
               </div>
@@ -291,7 +293,7 @@ const Requests: React.FC = () => {
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="font-bold text-sm text-white">Submission Failed</h4>
+                    <h4 className="font-bold text-sm text-white">{t('requests.errorTitle')}</h4>
                     <p className="text-xs text-gray-400 mt-1">{errorMessage}</p>
                   </div>
                 </div>
@@ -300,10 +302,10 @@ const Requests: React.FC = () => {
                 {errorMessage.includes('does not exist') && (
                   <div className="mt-3 p-3 bg-brand-dark border border-brand-border rounded-lg">
                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">
-                      Database Administrator Instructions:
+                      {t('requests.dbAdminTitle')}
                     </p>
                     <p className="text-[10px] text-gray-500 mb-2 leading-relaxed">
-                      Run this query in your Supabase SQL Editor to create the necessary table:
+                      {t('requests.dbAdminText')}
                     </p>
                     <pre className="text-[10px] bg-brand-card p-2 rounded text-gray-300 font-mono overflow-x-auto select-all">
 {`CREATE TABLE game_requests (
@@ -328,41 +330,36 @@ const Requests: React.FC = () => {
           <div className="bg-brand-card border border-brand-border rounded-2xl p-6 shadow-xl">
             <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider flex items-center gap-2">
               <Info className="w-5 h-5 text-brand-azure" />
-              Preservation Guidelines
+              {t('requests.guidelinesTitle')}
             </h2>
             <ul className="space-y-3.5 text-xs text-gray-400 leading-relaxed list-disc list-inside">
-              <li>
-                <strong className="text-white">Recent Releases Focus:</strong> ARES prioritizes archiving recent digital-only files and rare media.
-              </li>
-              <li>
-                <strong className="text-white">Accurate Steam ID:</strong> Always fetch the ID from Steam to allow automated importing of 4K trailers, high-quality original screenshots, and direct database population.
-              </li>
-              <li>
-                <strong className="text-white">Duplication Check:</strong> Please search our existing archive database before submitting a request.
-              </li>
-              <li>
-                <strong className="text-white">No Copyright Concerns:</strong> This is a metadata preservation and archiving project dedicated to community access.
-              </li>
+              {(t('requests.guidelines') as { strong: string; text: string }[]).map((g, i) => (
+                <li key={i}>
+                  <strong className="text-white">{g.strong}</strong> {g.text}
+                </li>
+              ))}
             </ul>
           </div>
 
           <div className="bg-brand-card border border-brand-border rounded-2xl p-6 shadow-xl">
             <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider flex items-center gap-2">
               <HelpCircle className="w-5 h-5 text-brand-azure" />
-              How to find a Steam AppID?
+              {t('requests.howToTitle')}
             </h2>
             <ol className="space-y-4 text-xs text-gray-400 leading-relaxed list-decimal list-inside">
               <li>
-                Open the Steam Store in your browser and search for your chosen title.
+                {(t('requests.howToSteps') as string[])[0]}
               </li>
               <li>
-                Look at the page URL. It follows this structure:
+                {(t('requests.howToSteps') as string[])[1]}
                 <div className="bg-brand-dark p-2 rounded-lg text-[10px] font-mono text-gray-300 mt-2 break-all border border-brand-border select-all">
                   https://store.steampowered.com/app/<span className="text-brand-azure font-black">1245620</span>/Elden_Ring/
                 </div>
               </li>
               <li>
-                The numeric sequence directly following <code className="text-brand-azure font-mono">/app/</code> is your target AppID. Just copy the whole URL or the ID itself and paste it here!
+                {(t('requests.howToSteps') as string[])[2].split('{code}')[0]}
+                <code className="text-brand-azure font-mono">/app/</code>
+                {(t('requests.howToSteps') as string[])[2].split('{code}')[1]}
               </li>
             </ol>
           </div>

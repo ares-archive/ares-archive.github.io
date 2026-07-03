@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../supabase'; 
 import { Game } from '../types/game';
+import { useLanguage } from '../i18n/LanguageContext';
 
 // Icona Steam ufficiale vettoriale
 const SteamIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -91,6 +92,7 @@ const getYouTubeThumbnail = (url: string): string | null => {
 
 const GameDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { t } = useLanguage();
   const [game, setGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(true); 
 
@@ -292,7 +294,7 @@ const GameDetails: React.FC = () => {
       ]);
     if (error) {
       console.error("Errore durante l'invio del commento:", error);
-      alert("Errore nell'invio del commento. Riprova!");
+      alert(t('gameDetails.commentError'));
     } else {
       setNewComment('');
       fetchComments(); 
@@ -303,7 +305,7 @@ const GameDetails: React.FC = () => {
   // Funzione helper intelligente per formattare HTML o testo semplice dei requisiti di Steam
   const renderRequirements = (reqHtml: string) => {
     if (!reqHtml || reqHtml.trim() === '') {
-      return <span className="text-gray-500 italic">No detailed specifications registered for this database record.</span>;
+      return <span className="text-gray-500 italic">{t('gameDetails.noSpecs')}</span>;
     }
     // Se la stringa contiene tag HTML (tipico delle stringhe esportate dall'API di Steam)
     if (/<[a-z][\s\S]*>/i.test(reqHtml)) {
@@ -324,7 +326,7 @@ const GameDetails: React.FC = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-white">
         <Loader2 className="w-12 h-12 text-brand-azure animate-spin mb-4" />
-        <p className="text-gray-400">Accessing secure archives...</p>
+        <p className="text-gray-400">{t('gameDetails.loading')}</p>
       </div>
     );
   }
@@ -332,7 +334,7 @@ const GameDetails: React.FC = () => {
   if (!game) {
     return (
       <div className="min-h-screen flex items-center justify-center text-white">
-        404 | Record Not Found
+        {t('gameDetails.notFound')}
       </div>
     );
   }
@@ -350,7 +352,7 @@ const GameDetails: React.FC = () => {
           <div className="container mx-auto">
             <Link to="/" className="inline-flex items-center gap-2 text-brand-azure font-bold mb-8 hover:translate-x-[-4px] transition-transform drop-shadow-lg">
               <ArrowLeft className="w-4 h-4" />
-              BACK TO DATABASE
+              {t('gameDetails.back')}
             </Link>
             <h1 className="text-6xl md:text-9xl font-black text-white mb-6 tracking-tighter uppercase italic leading-none drop-shadow-2xl">
               {game.title}
@@ -375,7 +377,7 @@ const GameDetails: React.FC = () => {
               <section className="space-y-4 animate-fade-in">
                 <div className="flex items-center gap-3 mb-2">
                   <Layers className="w-6 h-6 text-brand-azure" />
-                  <h2 className="text-2xl font-black text-white uppercase tracking-widest">Media Gallery</h2>
+                  <h2 className="text-2xl font-black text-white uppercase tracking-widest">{t('gameDetails.mediaGallery')}</h2>
                 </div>
                 <div className="aspect-video rounded-3xl overflow-hidden relative border border-brand-border shadow-2xl bg-black group">
                   <AnimatePresence mode="wait">
@@ -452,7 +454,7 @@ const GameDetails: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="h-8 w-1.5 bg-brand-azure rounded-full" />
-                  <h2 className="text-3xl font-black text-white tracking-tight uppercase">Overview</h2>
+                  <h2 className="text-3xl font-black text-white tracking-tight uppercase">{t('gameDetails.overview')}</h2>
                 </div>
                 <p className="text-xl leading-relaxed text-gray-400 font-medium max-w-3xl">
                   {game.description}
@@ -463,7 +465,7 @@ const GameDetails: React.FC = () => {
               <div className="pt-10 border-t border-brand-border space-y-8 animate-fade-in">
                 <div className="flex items-center gap-3">
                   <Cpu className="w-8 h-8 text-brand-azure" />
-                  <h3 className="text-2xl font-black text-white uppercase tracking-tight">System Requirements</h3>
+                  <h3 className="text-2xl font-black text-white uppercase tracking-tight">{t('gameDetails.systemRequirements')}</h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -471,7 +473,7 @@ const GameDetails: React.FC = () => {
                   <div className="bg-brand-card/45 border border-brand-border rounded-[2rem] p-8 space-y-4 hover:border-brand-azure/30 transition-colors shadow-xl">
                     <h4 className="text-sm font-black uppercase text-brand-azure tracking-widest flex items-center gap-2">
                       <span className="w-1.5 h-1.5 bg-brand-azure rounded-full" />
-                      Minimum Requirements
+                      {t('gameDetails.minimumRequirements')}
                     </h4>
                     <div className="font-medium">
                       {renderRequirements(game.minimumRequirements || '')}
@@ -482,7 +484,7 @@ const GameDetails: React.FC = () => {
                   <div className="bg-brand-card/45 border border-brand-border rounded-[2rem] p-8 space-y-4 hover:border-[#00ffcc]/30 transition-colors shadow-xl">
                     <h4 className="text-sm font-black uppercase text-[#00ffcc] tracking-widest flex items-center gap-2">
                       <span className="w-1.5 h-1.5 bg-[#00ffcc] rounded-full" />
-                      Recommended Requirements
+                      {t('gameDetails.recommendedRequirements')}
                     </h4>
                     <div className="font-medium">
                       {renderRequirements(game.recommendedRequirements || '')}
@@ -496,14 +498,14 @@ const GameDetails: React.FC = () => {
             <section className="pt-12 border-t border-brand-border">
               <h3 className="text-2xl font-black text-white mb-8 uppercase tracking-widest flex items-center gap-3">
                 <MessageSquare className="w-6 h-6 text-brand-azure" />
-                Discussion & Reports ({comments.length})
+                {t('gameDetails.discussion')} ({comments.length})
               </h3>
               {currentUser ? (
                 <form onSubmit={handleAddComment} className="flex gap-4 mb-10 bg-brand-card p-6 rounded-2xl border border-brand-border">
                   <img src={currentUser.avatar} alt="Avatar" className="w-10 h-10 rounded-full border border-brand-azure object-cover shrink-0" />
                   <div className="flex-1 space-y-3">
                     <textarea 
-                      placeholder="Scrivi un commento o segnala un problema..."
+                      placeholder={t('gameDetails.commentPlaceholder')}
                       required
                       rows={3}
                       className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-azure resize-none"
@@ -513,14 +515,14 @@ const GameDetails: React.FC = () => {
                     <div className="flex justify-end">
                       <button type="submit" disabled={submittingComment || !newComment.trim()} className="px-5 py-2.5 bg-brand-azure hover:brightness-110 text-white font-bold rounded-xl text-xs uppercase tracking-wider flex items-center gap-2 transition-all disabled:opacity-50">
                         <Send className="w-3.5 h-3.5" />
-                        {submittingComment ? 'Sending...' : 'Send Comment'}
+                        {submittingComment ? t('gameDetails.sending') : t('gameDetails.sendComment')}
                       </button>
                     </div>
                   </div>
                 </form>
               ) : (
                 <div className="text-center py-6 bg-brand-card/50 rounded-2xl border border-dashed border-brand-border mb-10">
-                  <p className="text-gray-400 text-sm mb-3">Connettiti con Discord per commentare.</p>
+                  <p className="text-gray-400 text-sm mb-3">{t('gameDetails.connectToComment')}</p>
                 </div>
               )}
               <div className="space-y-4">
@@ -546,28 +548,28 @@ const GameDetails: React.FC = () => {
                 {game.isUpcoming ? (
                   <button disabled className="w-full py-6 bg-brand-border text-gray-500 font-black rounded-2xl flex items-center justify-center gap-3 text-lg border border-dashed border-gray-600">
                     <Clock className="w-6 h-6" />
-                    COMING SOON
+                    {t('gameDetails.comingSoon')}
                   </button>
                 ) : (
                   <a href={game.buzzheavierLink} target="_blank" rel="noopener noreferrer" className="w-full py-6 bg-brand-azure hover:bg-brand-azure/90 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl shadow-brand-azure/20 group text-lg">
                     <Download className="w-6 h-6 group-hover:translate-y-1 transition-transform" />
-                    DOWNLOAD NOW
+                    {t('gameDetails.downloadNow')}
                   </a>
                 )}
                 
                 <div className="mt-12 space-y-8">
                   <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest">
-                    <span className="text-gray-500 flex items-center gap-2"><Calendar className="w-4 h-4" /> {game.isUpcoming ? 'Expected' : 'Released'}</span>
+                    <span className="text-gray-500 flex items-center gap-2"><Calendar className="w-4 h-4" /> {game.isUpcoming ? t('gameDetails.expected') : t('gameDetails.released')}</span>
                     <span className="text-white font-black">{game.releaseDate}</span>
                   </div>
                   <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest">
-                    <span className="text-gray-500 flex items-center gap-2"><Code2 className="w-4 h-4" /> Developer</span>
+                    <span className="text-gray-500 flex items-center gap-2"><Code2 className="w-4 h-4" /> {t('gameDetails.developer')}</span>
                     <span className="text-white font-black">{game.developer}</span>
                   </div>
 
                   {/* PRESERVATION & EMULATION SOURCES */}
                   <div className="pt-8 border-t border-brand-border space-y-3">
-                    <span className="text-[10px] font-black text-[#5865F2] uppercase tracking-widest block mb-2">Preservation & Emulation Sources</span>
+                    <span className="text-[10px] font-black text-[#5865F2] uppercase tracking-widest block mb-2">{t('gameDetails.preservationSources')}</span>
                     {game.steamUrl && (
                       <a 
                         href={game.steamUrl} 
@@ -576,7 +578,7 @@ const GameDetails: React.FC = () => {
                         className="w-full py-3 bg-[#1b2838]/80 hover:bg-[#2a475e]/80 border border-[#2a475e]/30 text-[#66c0f4] text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider shadow-lg shadow-[#1b2838]/10 hover:shadow-[#1b2838]/20 hover:-translate-y-0.5 active:translate-y-0"
                       >
                         <SteamIcon className="w-4 h-4 shrink-0" />
-                        Original Steam Source
+                        {t('gameDetails.originalSteamSource')}
                       </a>
                     )}
                     
@@ -589,7 +591,7 @@ const GameDetails: React.FC = () => {
                         className="w-full py-3 bg-[#1e2330]/90 hover:bg-[#272d42]/90 border border-[#272d42]/30 text-[#00ffcc] text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider shadow-lg shadow-[#1e2330]/15 hover:shadow-[#1e2330]/30 hover:-translate-y-0.5 active:translate-y-0"
                       >
                         <CsRinIcon className="w-4 h-4 shrink-0" />
-                        CS.RIN.RU Thread
+                        {t('gameDetails.csrinThread')}
                       </a>
                     ) : (
                       <a 
@@ -599,17 +601,17 @@ const GameDetails: React.FC = () => {
                         className="w-full py-3 bg-[#24292e]/80 hover:bg-[#2f363d]/80 border border-[#2f363d]/30 text-[#fafbfc] text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider shadow-lg shadow-[#24292e]/10 hover:shadow-[#24292e]/20 hover:-translate-y-0.5 active:translate-y-0"
                       >
                         <GithubIcon className="w-4 h-4 shrink-0" />
-                        Goldberg Emulator Fork
+                        {t('gameDetails.goldbergFork')}
                       </a>
                     )}
                   </div>
 
                   {/* LINK COMMERCIALI */}
                   <div className="pt-8 border-t border-brand-border space-y-3">
-                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-2">Support Developers</span>
-                    {game.steamUrl && <a href={game.steamUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#1b2838] hover:bg-[#2a475e] text-[#66c0f4] text-xs font-black rounded-xl transition-all flex items-center justify-center uppercase tracking-wider">Buy on Steam</a>}
-                    {game.gogUrl && <a href={game.gogUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#110d26] hover:bg-[#5c2e91] text-[#bf9cff] text-xs font-black rounded-xl transition-all flex items-center justify-center uppercase tracking-wider">Buy on GOG</a>}
-                    {game.epicUrl && <a href={game.epicUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#191919] hover:bg-[#2a2a2a] text-[#f5f5f5] text-xs font-black rounded-xl transition-all flex items-center justify-center uppercase tracking-wider">Buy on Epic Store</a>}
+                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-2">{t('gameDetails.supportDevelopers')}</span>
+                    {game.steamUrl && <a href={game.steamUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#1b2838] hover:bg-[#2a475e] text-[#66c0f4] text-xs font-black rounded-xl transition-all flex items-center justify-center uppercase tracking-wider">{t('gameDetails.buyOnSteam')}</a>}
+                    {game.gogUrl && <a href={game.gogUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#110d26] hover:bg-[#5c2e91] text-[#bf9cff] text-xs font-black rounded-xl transition-all flex items-center justify-center uppercase tracking-wider">{t('gameDetails.buyOnGog')}</a>}
+                    {game.epicUrl && <a href={game.epicUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#191919] hover:bg-[#2a2a2a] text-[#f5f5f5] text-xs font-black rounded-xl transition-all flex items-center justify-center uppercase tracking-wider">{t('gameDetails.buyOnEpic')}</a>}
                   </div>
                 </div>
               </div>
@@ -707,7 +709,7 @@ const GameDetails: React.FC = () => {
             <div className={`absolute bottom-6 text-gray-500 font-mono text-sm uppercase tracking-widest transition-all duration-300 ${
               showCursor ? 'opacity-100' : 'opacity-0'
             }`}>
-              Media {fullscreenIndex + 1} of {mediaItems.length}
+              {t('gameDetails.mediaCount', { current: fullscreenIndex + 1, total: mediaItems.length })}
             </div>
           </motion.div>
         )}
