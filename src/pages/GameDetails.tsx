@@ -623,12 +623,14 @@ const GameDetails: React.FC = () => {
       {/* FULLSCREEN MODAL CON SENSOR OVERLAY */}
       <AnimatePresence>
         {fullscreenIndex !== null && (
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }} 
-            onClick={() => setFullscreenIndex(null)} 
-            className="fixed inset-0 z-[100] bg-black/95 flex flex-col justify-center items-center p-4 select-none"
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setFullscreenIndex(null)}
+            onMouseMove={handleMouseMove}
+            className="fixed inset-0 z-[100] bg-black/95 flex flex-col justify-center items-center p-4 select-none transition-all"
+            style={{ cursor: showCursor ? 'default' : 'none' }}
           >
             {/* Pulsante di chiusura (sfuma insieme al cursore) */}
             <button 
@@ -646,37 +648,19 @@ const GameDetails: React.FC = () => {
                   const url = getYouTubeEmbedUrl(mediaItems[fullscreenIndex].url);
                   return url ? (
                     <div className="relative w-full h-full">
-                      <iframe 
-                        src={url} 
-                        className="w-full h-full rounded-2xl max-h-[85vh] border-0" 
-                        allowFullScreen 
-                      />
-                      {/* INTERACTION SENSOR OVERLAY PER YOUTUBE IFRAME */}
-                      <div 
-                        onMouseMove={handleMouseMove}
-                        className={`absolute inset-0 rounded-2xl transition-all duration-300 ${
-                          showCursor 
-                            ? 'pointer-events-none bg-transparent' 
-                            : 'pointer-events-auto bg-transparent cursor-none'
-                        }`}
+                      <iframe
+                        src={url}
+                        className="w-full h-full rounded-2xl max-h-[85vh] border-0"
+                        allowFullScreen
                       />
                     </div>
                   ) : (
                     <div className="relative w-full h-full flex items-center justify-center">
-                      <video 
-                        src={mediaItems[fullscreenIndex].url} 
-                        controls 
-                        autoPlay 
-                        className="max-h-[85vh] rounded-2xl" 
-                      />
-                      {/* INTERACTION SENSOR OVERLAY PER VIDEO TAG */}
-                      <div 
-                        onMouseMove={handleMouseMove}
-                        className={`absolute inset-0 rounded-2xl transition-all duration-300 ${
-                          showCursor 
-                            ? 'pointer-events-none bg-transparent' 
-                            : 'pointer-events-auto bg-transparent cursor-none'
-                        }`}
+                      <video
+                        src={mediaItems[fullscreenIndex].url}
+                        controls
+                        autoPlay
+                        className="max-h-[85vh] rounded-2xl"
                       />
                     </div>
                   );
