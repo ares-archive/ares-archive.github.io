@@ -36,8 +36,23 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('All');
   const { t, lang } = useLanguage();
-  
+
   const [visibleLimit, setVisibleLimit] = useState(24);
+
+  // Mappatura generi italiano -> inglese per normalizzazione
+  const normalizeGenre = (genre: string): string => {
+    const genreMap: { [key: string]: string } = {
+      'Azione': 'Action',
+      'Avventura': 'Adventure',
+      'RPG': 'RPG',
+      'Indie': 'Indie',
+      'Strategia': 'Strategy',
+      'Action': 'Action',
+      'Adventure': 'Adventure',
+      'Strategy': 'Strategy'
+    };
+    return genreMap[genre] || genre;
+  };
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -108,7 +123,8 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
 
   const filteredArchivedGames = archivedGames.filter(game => {
     if (activeFilter === 'All') return true;
-    return game.genres?.includes(activeFilter);
+    const normalizedFilter = normalizeGenre(activeFilter);
+    return game.genres?.some(genre => normalizeGenre(genre) === normalizedFilter);
   });
 
   const displayedArchivedGames = filteredArchivedGames.slice(0, visibleLimit);
