@@ -77,15 +77,22 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
             title: title || '',
             description: description || '',
             developer: dbGame.developer || '',
-            pearcryptLink: dbGame.pearcrypt_url || '',
+            buzzheavierLink: dbGame.pearcrypt_url || dbGame.buzzheavier_url || '',
             bannerImage: dbGame.banner_url || '',
             videoUrl: dbGame.video_url || '',
             steamScreenshots: dbGame.screenshots || [],
-            isUpcoming: dbGame.is_upcoming || false, 
+            isUpcoming: dbGame.is_upcoming || false,
+            steamUrl: dbGame.steam_url || '',
+            gogUrl: dbGame.gog_url || '',
+            epicUrl: dbGame.epic_url || '',
+            goldbergUrl: dbGame.goldberg_url || '',
+            minimumRequirements: dbGame.minimum_requirements || '',
+            recommendedRequirements: dbGame.recommended_requirements || '',
+            crackedBy: dbGame.cracked_by || '',
             tags: ['New'],
-            genres: dbGame.genres || [], 
+            genres: dbGame.genre ? [dbGame.genre] : [],
             platforms: ['windows'],
-            releaseDate: formattedReleaseDate, // Utilizza il valore formattato con fallback TBA
+            releaseDate: formattedReleaseDate,
           };
         });
         
