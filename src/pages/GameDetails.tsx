@@ -206,9 +206,9 @@ const GameDetails: React.FC = () => {
     }
 
     fetchGameDetails();
-    fetchComments(); 
+    fetchComments();
     window.scrollTo(0, 0);
-  }, [id]);
+  }, [id, lang]);
 
   const handlePrevMedia = () => {
     setActiveIndex(prev => (prev === 0 ? mediaItems.length - 1 : prev - 1));
