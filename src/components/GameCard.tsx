@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Monitor, Apple } from 'lucide-react';
 import { Game } from '../types/game';
 
 interface GameCardProps {
@@ -25,10 +24,6 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
             loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/90 via-transparent to-transparent opacity-60" />
-          <div className="absolute bottom-3 right-3 flex gap-1.5">
-            {game.platforms.includes('windows') && <Monitor className="w-3.5 h-3.5 text-gray-400" />}
-            {game.platforms.includes('mac') && <Apple className="w-3.5 h-3.5 text-gray-400" />}
-          </div>
         </div>
         
         <div className="p-5">
