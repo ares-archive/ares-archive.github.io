@@ -175,7 +175,7 @@ const GameDetails: React.FC = () => {
           minimumRequirements: data.minimum_requirements || '', // Requisiti minimi
           recommendedRequirements: data.recommended_requirements || '', // Requisiti consigliati
           tags: ['New'],
-          genres: [],
+          genres: data.genre ? [data.genre] : [],
           platforms: ['windows'],
           releaseDate: formattedReleaseDate,
         };
