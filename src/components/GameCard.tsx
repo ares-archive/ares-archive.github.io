@@ -14,13 +14,25 @@ const GameCardComponent: React.FC<GameCardProps> = ({ game }) => {
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   const checkFavorite = useCallback(async (userId: string, gameId: string) => {
-    const { data } = await supabase
-      .from('favorites')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('game_id', parseInt(gameId))
-      .single();
-    setIsFavorite(!!data);
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('game_id', parseInt(gameId))
+        .single();
+      
+      if (error) {
+        // Silenzia errori 406 e altri errori di rete senza rompere la funzionalità
+        console.debug('Favorite check error (silenced):', error);
+        return;
+      }
+      
+      setIsFavorite(!!data);
+    } catch (error) {
+      // Silenzia qualsiasi errore per evitare spam nella console
+      console.debug('Favorite check exception (silenced):', error);
+    }
   }, []);
 
   useEffect(() => {
@@ -38,18 +50,34 @@ const GameCardComponent: React.FC<GameCardProps> = ({ game }) => {
       return;
     }
 
-    if (isFavorite) {
-      await supabase
-        .from('favorites')
-        .delete()
-        .eq('user_id', currentUser.id)
-        .eq('game_id', parseInt(game.id));
-      setIsFavorite(false);
-    } else {
-      await supabase
-        .from('favorites')
-        .insert([{ user_id: currentUser.id, game_id: parseInt(game.id) }]);
-      setIsFavorite(true);
+    try {
+      if (isFavorite) {
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', currentUser.id)
+          .eq('game_id', parseInt(game.id));
+        
+        if (error) {
+          console.debug('Favorite remove error (silenced):', error);
+          return;
+        }
+        
+        setIsFavorite(false);
+      } else {
+        const { error } = await supabase
+          .from('favorites')
+          .insert([{ user_id: currentUser.id, game_id: parseInt(game.id) }]);
+        
+        if (error) {
+          console.debug('Favorite add error (silenced):', error);
+          return;
+        }
+        
+        setIsFavorite(true);
+      }
+    } catch (error) {
+      console.debug('Favorite toggle exception (silenced):', error);
     }
   }, [currentUser, isFavorite, game.id]);
 
