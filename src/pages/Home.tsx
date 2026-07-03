@@ -124,6 +124,7 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
   const filteredArchivedGames = archivedGames.filter(game => {
     if (activeFilter === 'All') return true;
     const normalizedFilter = normalizeGenre(activeFilter);
+    console.log('Filter:', activeFilter, 'Normalized:', normalizedFilter, 'Game genres:', game.genres);
     return game.genres?.some(genre => normalizeGenre(genre) === normalizedFilter);
   });
 
