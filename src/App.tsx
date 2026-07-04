@@ -35,6 +35,82 @@ function App() {
   const { t } = useLanguage();
   const { bgTheme } = useBackgroundTheme();
 
+  // User-Agent detection to block bots
+  useEffect(() => {
+    const userAgent = navigator.userAgent.toLowerCase();
+
+    // List of known bot user agents
+    const botPatterns = [
+      /googlebot/i,
+      /bingbot/i,
+      /slurp/i,
+      /duckduckbot/i,
+      /baiduspider/i,
+      /yandexbot/i,
+      /crawler/i,
+      /spider/i,
+      /bot/i,
+      /curl/i,
+      /wget/i,
+      /python/i,
+      /java/i,
+      /perl/i,
+      /ruby/i,
+      /php/i,
+      /http/i,
+      /scan/i,
+      /crawl/i,
+      /headless/i,
+      /phantom/i,
+      /selenium/i,
+      /puppeteer/i,
+      /playwright/i,
+      /aws/i,
+      /azure/i,
+      /cloudflare/i,
+      /lighthouse/i,
+      /page-speed/i,
+      /insights/i,
+      /monitor/i,
+      /audit/i,
+      /test/i,
+      /check/i,
+      /validate/i,
+      /verify/i,
+      /analyze/i,
+      /measure/i,
+      /optimize/i,
+      /performance/i,
+      /seo/i,
+      /index/i,
+      /archive/i,
+      /wayback/i,
+      /snapshot/i,
+      /cache/i,
+      /proxy/i,
+      /vpn/i,
+      /tor/i,
+      /anonymous/i,
+      /private/i,
+      /incognito/i,
+      /stealth/i,
+      /ghost/i,
+      /hidden/i,
+      /secret/i,
+      /invisible/i,
+      /undetectable/i,
+      /untraceable/i
+    ];
+
+    const isBot = botPatterns.some(pattern => pattern.test(userAgent));
+
+    if (isBot) {
+      // Redirect to a blank page or show access denied
+      document.body.innerHTML = '<h1 style="color: white; text-align: center; margin-top: 50vh;">Access Denied</h1>';
+      window.location.href = 'about:blank';
+    }
+  }, []);
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
     localStorage.setItem('ares_theme', isDark ? 'dark' : 'light');
