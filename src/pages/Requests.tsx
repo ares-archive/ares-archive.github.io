@@ -76,13 +76,15 @@ const Requests: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Ulteriore controllo di sicurezza anti-flood sul client
+    // Ulteriore controllo di sicurezza anti-flood sul client (72 ore)
     const lastRequest = localStorage.getItem('ares_last_request_time');
     if (lastRequest) {
       const elapsed = Date.now() - parseInt(lastRequest, 10);
-      if (elapsed < 60000) {
+      const cooldownDuration = 259200000; // 72 ore in millisecondi
+      if (elapsed < cooldownDuration) {
         setSubmitStatus('error');
-        setErrorMessage(t('requests.errCooldown', { seconds: Math.ceil((60000 - elapsed) / 1000) }));
+        const hoursLeft = Math.ceil((cooldownDuration - elapsed) / (1000 * 60 * 60));
+        setErrorMessage(`You must wait ${hoursLeft} hours before submitting another request`);
         return;
       }
     }
