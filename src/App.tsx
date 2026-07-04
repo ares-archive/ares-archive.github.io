@@ -111,6 +111,106 @@ function App() {
     }
   }, []);
 
+  // Anti-preloading and external script protection
+  useEffect(() => {
+    // Block external script injection
+    const originalCreateElement = document.createElement;
+    document.createElement = function(tagName: string) {
+      const element = originalCreateElement.call(document, tagName);
+
+      if (tagName.toLowerCase() === 'script') {
+        const originalSetAttribute = element.setAttribute;
+        element.setAttribute = function(name: string, value: string) {
+          if (name.toLowerCase() === 'src') {
+            // Block external scripts that are not from trusted domains
+            const trustedDomains = [
+              window.location.hostname,
+              'cdn.jsdelivr.net',
+              'unpkg.com',
+              'cdnjs.cloudflare.com'
+            ];
+
+            try {
+              const url = new URL(value, window.location.href);
+              const isTrusted = trustedDomains.some(domain => url.hostname.includes(domain));
+
+              if (!isTrusted) {
+                console.warn('Blocked external script:', value);
+                return;
+              }
+            } catch {
+              console.warn('Blocked invalid script URL:', value);
+              return;
+            }
+          }
+          return originalSetAttribute.call(this, name, value);
+        };
+      }
+
+      return element;
+    };
+
+    // Block DOM manipulation from external sources
+    const originalInsertBefore = Node.prototype.insertBefore;
+    // @ts-ignore - Intentionally overriding native API for security
+    Node.prototype.insertBefore = function(newNode: Node, referenceNode: Node | null) {
+      if (newNode instanceof HTMLScriptElement) {
+        const src = newNode.getAttribute('src');
+        if (src && !src.startsWith(window.location.origin)) {
+          console.warn('Blocked external script insertion:', src);
+          return this as Node;
+        }
+      }
+      return originalInsertBefore.call(this, newNode, referenceNode);
+    };
+
+    // Block eval and Function constructor
+    const originalEval = window.eval;
+    window.eval = function(_code: string) {
+      console.warn('Blocked eval() call');
+      throw new Error('eval() is disabled');
+    };
+
+    // Block Function constructor (simplified to avoid type errors)
+    const originalFunction = window.Function;
+    // @ts-ignore - Intentionally overriding Function constructor
+    window.Function = function() {
+      console.warn('Blocked Function() constructor');
+      throw new Error('Function() constructor is disabled');
+    };
+
+    // Monitor for suspicious DOM modifications
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node instanceof HTMLElement) {
+            // Check for injected scripts or iframes
+            if (node.tagName === 'SCRIPT' || node.tagName === 'IFRAME') {
+              const src = (node as HTMLScriptElement | HTMLIFrameElement).getAttribute('src');
+              if (src && !src.startsWith(window.location.origin)) {
+                console.warn('Blocked injected external element:', src);
+                node.remove();
+              }
+            }
+          }
+        });
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+
+    return () => {
+      document.createElement = originalCreateElement;
+      Node.prototype.insertBefore = originalInsertBefore;
+      window.eval = originalEval;
+      window.Function = originalFunction;
+      observer.disconnect();
+    };
+  }, []);
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
     localStorage.setItem('ares_theme', isDark ? 'dark' : 'light');
