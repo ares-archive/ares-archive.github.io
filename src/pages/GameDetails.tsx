@@ -312,6 +312,19 @@ const GameDetails: React.FC = () => {
   const handleSubmitReport = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reportReason.trim() || !id) return;
+
+    // Check rate limit (72 hours)
+    const lastReportTime = localStorage.getItem('ares_last_report_time');
+    if (lastReportTime) {
+      const elapsed = Date.now() - parseInt(lastReportTime, 10);
+      const cooldownDuration = 259200000; // 72 ore in millisecondi
+      if (elapsed < cooldownDuration) {
+        const hoursLeft = Math.ceil((cooldownDuration - elapsed) / (1000 * 60 * 60));
+        alert(`You must wait ${hoursLeft} hours before submitting another report`);
+        return;
+      }
+    }
+
     setSubmittingReport(true);
 
     const { error } = await supabase
@@ -329,6 +342,7 @@ const GameDetails: React.FC = () => {
       console.error("Errore durante l'invio del report:", error);
       alert('Error submitting report');
     } else {
+      localStorage.setItem('ares_last_report_time', Date.now().toString());
       alert('Report submitted successfully');
       setShowReportModal(false);
       setReportReason('');

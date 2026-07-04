@@ -38,13 +38,13 @@ const Requests: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [cooldownTimeLeft, setCooldownTimeLeft] = useState(0);
 
-  // Monitora in tempo reale lo stato dell'anti-flood cooldown (1 minuto)
+  // Monitora in tempo reale lo stato dell'anti-flood cooldown (72 ore)
   useEffect(() => {
     const checkCooldown = () => {
       const lastRequest = localStorage.getItem('ares_last_request_time');
       if (lastRequest) {
         const elapsed = Date.now() - parseInt(lastRequest, 10);
-        const cooldownDuration = 60000; // 1 minuto in millisecondi
+        const cooldownDuration = 259200000; // 72 ore in millisecondi
         if (elapsed < cooldownDuration) {
           setCooldownTimeLeft(Math.ceil((cooldownDuration - elapsed) / 1000));
         } else {

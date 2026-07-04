@@ -38,6 +38,49 @@ function App() {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
     localStorage.setItem('ares_theme', isDark ? 'dark' : 'light');
+
+    // Anti-inspection protection
+    const preventDevTools = (e: KeyboardEvent) => {
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+        (e.ctrlKey && e.key === 'U')
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    };
+
+    const preventRightClick = (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    };
+
+    const preventDrag = (e: DragEvent) => {
+      e.preventDefault();
+      return false;
+    };
+
+    // Disable keyboard shortcuts for dev tools
+    document.addEventListener('keydown', preventDevTools, true);
+    // Disable right-click
+    document.addEventListener('contextmenu', preventRightClick, true);
+    // Disable drag events
+    document.addEventListener('dragstart', preventDrag, true);
+    document.addEventListener('drop', preventDrag, true);
+
+    // Disable text selection and copy via CSS
+    document.body.style.userSelect = 'none';
+    document.body.style.webkitUserSelect = 'none';
+
+    return () => {
+      document.removeEventListener('keydown', preventDevTools, true);
+      document.removeEventListener('contextmenu', preventRightClick, true);
+      document.removeEventListener('dragstart', preventDrag, true);
+      document.removeEventListener('drop', preventDrag, true);
+    };
   }, [isDark]);
 
   return (
