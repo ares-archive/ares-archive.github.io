@@ -75,11 +75,39 @@ function App() {
     document.body.style.userSelect = 'none';
     document.body.style.webkitUserSelect = 'none';
 
+    // Debugger detection using timing attack
+    const detectDebugger = () => {
+      const start = performance.now();
+      debugger;
+      const end = performance.now();
+      if (end - start > 100) {
+        console.clear();
+        window.location.reload();
+      }
+    };
+
+    // Periodic checks for protection bypass
+    const checkProtections = () => {
+      // Re-apply CSS protections
+      document.body.style.userSelect = 'none';
+      document.body.style.webkitUserSelect = 'none';
+
+      // Check if debugger is detected
+      detectDebugger();
+    };
+
+    // Run checks periodically
+    const protectionInterval = setInterval(checkProtections, 1000);
+
+    // Initial debugger check
+    detectDebugger();
+
     return () => {
       document.removeEventListener('keydown', preventDevTools, true);
       document.removeEventListener('contextmenu', preventRightClick, true);
       document.removeEventListener('dragstart', preventDrag, true);
       document.removeEventListener('drop', preventDrag, true);
+      clearInterval(protectionInterval);
     };
   }, [isDark]);
 
