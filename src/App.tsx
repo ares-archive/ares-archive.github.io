@@ -211,6 +211,91 @@ function App() {
     };
   }, []);
 
+  // IP tracking and blocking system
+  useEffect(() => {
+    const trackAndBlockIP = async () => {
+      try {
+        // Get real IP using multiple services for accuracy
+        const ipServices = [
+          'https://api.ipify.org?format=json',
+          'https://api.ipify.org',
+          'https://ipapi.co/json/',
+          'https://ip-api.com/json/'
+        ];
+
+        let realIP = '';
+        for (const service of ipServices) {
+          try {
+            const response = await fetch(service);
+            const data = await response.json();
+            
+            if (data.ip) {
+              realIP = data.ip;
+              break;
+            }
+          } catch {
+            continue;
+          }
+        }
+
+        if (!realIP) {
+          console.warn('Could not determine real IP');
+          return;
+        }
+
+        // Check if IP is blocked in localStorage (client-side check)
+        const blockedIPs = JSON.parse(localStorage.getItem('ares_blocked_ips') || '[]');
+        if (blockedIPs.includes(realIP)) {
+          document.body.innerHTML = '<h1 style="color: white; text-align: center; margin-top: 50vh;">Access Denied</h1>';
+          window.location.href = 'about:blank';
+          return;
+        }
+
+        // Track IP activity in localStorage (rate limiting per IP)
+        const ipActivity = JSON.parse(localStorage.getItem('ares_ip_activity') || '{}');
+        const now = Date.now();
+        
+        if (!ipActivity[realIP]) {
+          ipActivity[realIP] = { count: 0, firstSeen: now, lastSeen: now };
+        }
+        
+        ipActivity[realIP].count++;
+        ipActivity[realIP].lastSeen = now;
+        
+        // Auto-block if too many requests in short time (spam detection)
+        const timeWindow = 60000; // 1 minute
+        const maxRequests = 100; // Max 100 requests per minute
+        
+        if (ipActivity[realIP].count > maxRequests && (now - ipActivity[realIP].firstSeen) < timeWindow) {
+          blockedIPs.push(realIP);
+          localStorage.setItem('ares_blocked_ips', JSON.stringify(blockedIPs));
+          
+          // Log to console for Supabase tracking (would be sent to backend in production)
+          console.warn('IP blocked due to spam:', realIP);
+          
+          document.body.innerHTML = '<h1 style="color: white; text-align: center; margin-top: 50vh;">Access Denied - Too Many Requests</h1>';
+          window.location.href = 'about:blank';
+          return;
+        }
+        
+        localStorage.setItem('ares_ip_activity', JSON.stringify(ipActivity));
+        
+        // Send IP info to Supabase for tracking (if user is logged in)
+        const userStr = localStorage.getItem('ares_discord_user');
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          // This would be sent to a backend endpoint in production
+          console.log('IP Tracking:', { ip: realIP, userId: user.id, timestamp: new Date().toISOString() });
+        }
+        
+      } catch (error) {
+        console.error('Error tracking IP:', error);
+      }
+    };
+
+    trackAndBlockIP();
+  }, []);
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
     localStorage.setItem('ares_theme', isDark ? 'dark' : 'light');
