@@ -843,7 +843,7 @@ const GameDetails: React.FC = () => {
 
                 </div>
 
-                <div className="aspect-video rounded-3xl overflow-hidden relative border border-brand-border shadow-2xl bg-black group">
+                <div className="aspect-video rounded-3xl overflow-hidden relative border border-brand-border shadow-2xl bg-black group" onContextMenu={(e) => e.preventDefault()}>
 
                   <AnimatePresence mode="wait">
 
@@ -871,6 +871,8 @@ const GameDetails: React.FC = () => {
 
                               allowFullScreen
 
+                              onContextMenu={(e) => e.preventDefault()}
+
                             />
 
                           );
@@ -879,19 +881,21 @@ const GameDetails: React.FC = () => {
 
                         return (
 
-                          <video 
+                          <video
 
                             key={activeMedia.url}
 
-                            src={activeMedia.url} 
+                            src={activeMedia.url}
 
-                            controls 
+                            controls
 
                             autoPlay
 
                             muted
 
                             className="w-full h-full object-contain"
+
+                            onContextMenu={(e) => e.preventDefault()}
 
                           />
 
@@ -903,11 +907,11 @@ const GameDetails: React.FC = () => {
 
                       activeMedia && (
 
-                        <motion.img 
+                        <motion.img
 
                           key={activeMedia.url}
 
-                          src={activeMedia.url} 
+                          src={activeMedia.url}
 
                           initial={{ opacity: 0 }}
 
@@ -915,11 +919,13 @@ const GameDetails: React.FC = () => {
 
                           exit={{ opacity: 0 }}
 
-                          className="w-full h-full object-cover cursor-zoom-in" 
+                          className="w-full h-full object-cover cursor-zoom-in"
 
                           onClick={() => setFullscreenIndex(activeIndex)}
 
-                          alt="Game Screenshot" 
+                          onContextMenu={(e) => e.preventDefault()}
+
+                          alt="Game Screenshot"
 
                         />
 
