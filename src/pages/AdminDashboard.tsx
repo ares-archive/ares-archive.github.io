@@ -618,22 +618,22 @@ const AdminDashboard = () => {
 
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest pl-1">
-                  Game Link (Buzzheavier)
+                  Game Link (FileDitch)
                 </label>
                 <div className="flex gap-2">
-                  <input 
-                    placeholder="Buzzheavier Link (URL)"
+                  <input
+                    placeholder="FileDitch Link (URL)"
                     className="flex-1 bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-azure"
                     value={activeGame.buzzheavierLink || ''}
                     onChange={e => setActiveGame({...activeGame, buzzheavierLink: e.target.value})}
-                    required={!activeGame.isUpcoming} 
+                    required={!activeGame.isUpcoming}
                   />
                   <a
-                    href="https://buzzheavier.com/"
+                    href="https://new.fileditch.com/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all text-center"
-                    title="Apri Buzzheavier in una nuova scheda per l'upload"
+                    title="Apri FileDitch in una nuova scheda per l'upload"
                   >
                     <Upload className="w-3.5 h-3.5" />
                     Upload
