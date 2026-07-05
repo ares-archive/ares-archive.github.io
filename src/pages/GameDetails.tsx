@@ -876,8 +876,7 @@ const GameDetails: React.FC = () => {
                               <div
                                 className="absolute inset-0"
                                 onContextMenu={(e) => e.preventDefault()}
-                                onDragStart={(e) => e.preventDefault()}
-                                style={{ pointerEvents: 'auto', zIndex: 10 }}
+                                style={{ pointerEvents: 'none', zIndex: 10 }}
                               />
                             </div>
 
