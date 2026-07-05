@@ -876,7 +876,15 @@ const GameDetails: React.FC = () => {
                               <div
                                 className="absolute inset-0"
                                 onContextMenu={(e) => e.preventDefault()}
-                                style={{ pointerEvents: 'none', zIndex: 10 }}
+                                onDragStart={(e) => e.preventDefault()}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const iframe = e.currentTarget.previousElementSibling as HTMLIFrameElement;
+                                  if (iframe) {
+                                    iframe.focus();
+                                  }
+                                }}
+                                style={{ pointerEvents: 'auto', zIndex: 10 }}
                               />
                             </div>
 
