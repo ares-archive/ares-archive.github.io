@@ -139,6 +139,6 @@ git push origin feature/your-feature
 
 <div align="center">
 
-[**ildenteproibito**](https://github.com/ildenteproibito) — IL DENTE PROIBITO, Web Developer by ARES (with [**Luke10-glitch**](https://github.com/Luke10-glitch), Founder of ARES)
+[**ildenteproibito**](https://github.com/ildenteproibito) — IL DENTE PROIBITO, Web Developer by ARES & [**Luke10-glitch**](https://github.com/Luke10-glitch), Founder of ARES
 
 </div>
