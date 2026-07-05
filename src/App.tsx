@@ -216,6 +216,8 @@ function App() {
   useEffect(() => {
     const trackAndBlockIP = async () => {
       try {
+        console.log('Starting IP tracking...');
+
         // Get real IP using multiple services for accuracy
         const ipServices = [
           'https://api.ipify.org?format=json',
@@ -227,26 +229,30 @@ function App() {
         let realIP = '';
         for (const service of ipServices) {
           try {
+            console.log('Trying IP service:', service);
             const response = await fetch(service);
             const data = await response.json();
-            
+
             if (data.ip) {
               realIP = data.ip;
+              console.log('IP detected:', realIP);
               break;
             }
-          } catch {
+          } catch (err) {
+            console.warn('IP service failed:', service, err);
             continue;
           }
         }
 
         if (!realIP) {
-          console.warn('Could not determine real IP');
+          console.warn('Could not determine real IP from any service');
           return;
         }
 
         // Check if IP is blocked in localStorage (client-side check)
         const blockedIPs = JSON.parse(localStorage.getItem('ares_blocked_ips') || '[]');
         if (blockedIPs.includes(realIP)) {
+          console.warn('IP is blocked in localStorage:', realIP);
           document.body.innerHTML = '<h1 style="color: white; text-align: center; margin-top: 50vh;">Access Denied</h1>';
           window.location.href = 'about:blank';
           return;
@@ -255,30 +261,32 @@ function App() {
         // Track IP activity in localStorage (rate limiting per IP)
         const ipActivity = JSON.parse(localStorage.getItem('ares_ip_activity') || '{}');
         const now = Date.now();
-        
+
         if (!ipActivity[realIP]) {
           ipActivity[realIP] = { count: 0, firstSeen: now, lastSeen: now };
         }
-        
+
         ipActivity[realIP].count++;
         ipActivity[realIP].lastSeen = now;
-        
+
+        console.log('IP activity:', ipActivity[realIP]);
+
         // Auto-block if too many requests in short time (spam detection)
         const timeWindow = 60000; // 1 minute
         const maxRequests = 100; // Max 100 requests per minute
-        
+
         if (ipActivity[realIP].count > maxRequests && (now - ipActivity[realIP].firstSeen) < timeWindow) {
           blockedIPs.push(realIP);
           localStorage.setItem('ares_blocked_ips', JSON.stringify(blockedIPs));
-          
+
           // Log to console for Supabase tracking (would be sent to backend in production)
           console.warn('IP blocked due to spam:', realIP);
-          
+
           document.body.innerHTML = '<h1 style="color: white; text-align: center; margin-top: 50vh;">Access Denied - Too Many Requests</h1>';
           window.location.href = 'about:blank';
           return;
         }
-        
+
         localStorage.setItem('ares_ip_activity', JSON.stringify(ipActivity));
 
         // Send IP info to Supabase for tracking
@@ -286,25 +294,33 @@ function App() {
         const userId = userStr ? JSON.parse(userStr).id : null;
         const userAgent = navigator.userAgent;
 
+        console.log('Attempting to save IP to Supabase:', { ip: realIP, userId });
+
         try {
           // Check if IP already exists in database
-          const { data: existingIP } = await supabase
+          const { data: existingIP, error: checkError } = await supabase
             .from('ip_tracking')
             .select('id, request_count, is_blocked')
             .eq('ip_address', realIP)
             .single();
 
+          if (checkError) {
+            console.error('Error checking existing IP:', checkError);
+          }
+
           if (existingIP) {
+            console.log('IP already exists in database:', existingIP);
             // Update existing IP record
             if (existingIP.is_blocked) {
               // IP is already blocked, deny access
+              console.warn('IP is blocked in database:', realIP);
               document.body.innerHTML = '<h1 style="color: white; text-align: center; margin-top: 50vh;">Access Denied - IP Blocked</h1>';
               window.location.href = 'about:blank';
               return;
             }
 
             // Update request count and last seen
-            await supabase
+            const { error: updateError } = await supabase
               .from('ip_tracking')
               .update({
                 request_count: existingIP.request_count + 1,
@@ -313,9 +329,16 @@ function App() {
                 user_id: userId
               })
               .eq('id', existingIP.id);
+
+            if (updateError) {
+              console.error('Error updating IP:', updateError);
+            } else {
+              console.log('IP updated successfully');
+            }
           } else {
+            console.log('Inserting new IP record');
             // Insert new IP record
-            await supabase
+            const { error: insertError } = await supabase
               .from('ip_tracking')
               .insert({
                 ip_address: realIP,
@@ -326,12 +349,18 @@ function App() {
                   first_request: new Date().toISOString()
                 }
               });
+
+            if (insertError) {
+              console.error('Error inserting IP:', insertError);
+            } else {
+              console.log('IP inserted successfully');
+            }
           }
         } catch (error) {
           console.error('Error saving IP to Supabase:', error);
           // Continue even if Supabase fails, localStorage still works
         }
-        
+
       } catch (error) {
         console.error('Error tracking IP:', error);
       }
