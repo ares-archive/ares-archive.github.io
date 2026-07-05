@@ -857,23 +857,29 @@ const GameDetails: React.FC = () => {
 
                           return (
 
-                            <iframe
+                            <div className="relative w-full h-full">
+                              <iframe
 
-                              key={activeMedia.url}
+                                key={activeMedia.url}
 
-                              src={embedUrl}
+                                src={embedUrl}
 
-                              title={`${game.title} Trailer`}
+                                title={`${game.title} Trailer`}
 
-                              className="w-full h-full border-0 rounded-3xl"
+                                className="w-full h-full border-0 rounded-3xl"
 
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
 
-                              allowFullScreen
+                                allowFullScreen
 
-                              onContextMenu={(e) => e.preventDefault()}
-
-                            />
+                              />
+                              <div
+                                className="absolute inset-0"
+                                onContextMenu={(e) => e.preventDefault()}
+                                onDragStart={(e) => e.preventDefault()}
+                                style={{ pointerEvents: 'auto', zIndex: 10 }}
+                              />
+                            </div>
 
                           );
 
