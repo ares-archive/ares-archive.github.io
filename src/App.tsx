@@ -4,6 +4,7 @@ import { Header } from './components/Header';
 import { useLanguage } from './i18n/LanguageContext';
 import { useBackgroundTheme } from './theme/BackgroundThemeContext';
 import { Loader2 } from 'lucide-react';
+import { supabase } from './supabase';
 
 // Lazy loading delle pagine per ridurre il bundle iniziale
 const Home = lazy(() => import('./pages/Home'));
@@ -279,13 +280,56 @@ function App() {
         }
         
         localStorage.setItem('ares_ip_activity', JSON.stringify(ipActivity));
-        
-        // Send IP info to Supabase for tracking (if user is logged in)
+
+        // Send IP info to Supabase for tracking
         const userStr = localStorage.getItem('ares_discord_user');
-        if (userStr) {
-          const user = JSON.parse(userStr);
-          // This would be sent to a backend endpoint in production
-          console.log('IP Tracking:', { ip: realIP, userId: user.id, timestamp: new Date().toISOString() });
+        const userId = userStr ? JSON.parse(userStr).id : null;
+        const userAgent = navigator.userAgent;
+
+        try {
+          // Check if IP already exists in database
+          const { data: existingIP } = await supabase
+            .from('ip_tracking')
+            .select('id, request_count, is_blocked')
+            .eq('ip_address', realIP)
+            .single();
+
+          if (existingIP) {
+            // Update existing IP record
+            if (existingIP.is_blocked) {
+              // IP is already blocked, deny access
+              document.body.innerHTML = '<h1 style="color: white; text-align: center; margin-top: 50vh;">Access Denied - IP Blocked</h1>';
+              window.location.href = 'about:blank';
+              return;
+            }
+
+            // Update request count and last seen
+            await supabase
+              .from('ip_tracking')
+              .update({
+                request_count: existingIP.request_count + 1,
+                last_seen: new Date().toISOString(),
+                user_agent: userAgent,
+                user_id: userId
+              })
+              .eq('id', existingIP.id);
+          } else {
+            // Insert new IP record
+            await supabase
+              .from('ip_tracking')
+              .insert({
+                ip_address: realIP,
+                user_id: userId,
+                request_count: 1,
+                user_agent: userAgent,
+                metadata: {
+                  first_request: new Date().toISOString()
+                }
+              });
+          }
+        } catch (error) {
+          console.error('Error saving IP to Supabase:', error);
+          // Continue even if Supabase fails, localStorage still works
         }
         
       } catch (error) {
