@@ -212,6 +212,60 @@ function App() {
     };
   }, []);
 
+  // Console protection - filter sensitive data
+  useEffect(() => {
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    const originalError = console.error;
+
+    const sensitivePatterns = [
+      /api[_-]?key/i,
+      /auth[_-]?token/i,
+      /password/i,
+      /secret/i,
+      /private[_-]?key/i,
+      /supabase[_-]?key/i,
+      /jwt/i,
+      /session/i
+    ];
+
+    const filterSensitiveData = (args: any[]) => {
+      const filtered = args.map(arg => {
+        if (typeof arg === 'string') {
+          let filtered = arg;
+          sensitivePatterns.forEach(pattern => {
+            filtered = filtered.replace(pattern, '[REDACTED]');
+          });
+          return filtered;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            const str = JSON.stringify(arg);
+            let filtered = str;
+            sensitivePatterns.forEach(pattern => {
+              filtered = filtered.replace(pattern, '[REDACTED]');
+            });
+            return JSON.parse(filtered);
+          } catch {
+            return arg;
+          }
+        }
+        return arg;
+      });
+      return filtered;
+    };
+
+    console.log = (...args) => originalLog(...filterSensitiveData(args));
+    console.warn = (...args) => originalWarn(...filterSensitiveData(args));
+    console.error = (...args) => originalError(...filterSensitiveData(args));
+
+    return () => {
+      console.log = originalLog;
+      console.warn = originalWarn;
+      console.error = originalError;
+    };
+  }, []);
+
   // IP tracking and blocking system
   useEffect(() => {
     const trackAndBlockIP = async () => {
