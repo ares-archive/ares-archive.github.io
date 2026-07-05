@@ -20,7 +20,7 @@
 
 ## Overview
 
-ARES Archive is the primary interface of the **ARES Digital Preservation Project** — a comprehensive initiative to catalogue, preserve, and make accessible the history of digital media. Built on a Next.js + TypeScript stack and deployed on Cloudflare Pages for global edge delivery.
+ARES Archive is the primary interface of the **ARES Digital Preservation Project** — a comprehensive initiative to catalogue, preserve, and make accessible the history of digital media. Built on[...]
 
 ---
 
@@ -139,6 +139,6 @@ git push origin feature/your-feature
 
 <div align="center">
 
-Maintained by [**ildenteproibito**](https://github.com/ildenteproibito) — IL DENTE PROIBITO
+[**ildenteproibito**](https://github.com/ildenteproibito) — IL DENTE PROIBITO (with [**Luke10-glitch**](https://github.com/Luke10-glitch), Founder of ARES)
 
 </div>
