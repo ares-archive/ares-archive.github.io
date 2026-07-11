@@ -137,6 +137,12 @@ git push origin feature/your-feature
 
 ---
 
+## License
+
+This project is licensed under the GPL-2.0 license — see the [LICENSE](LICENSE) file for details.
+
+---
+
 <div align="center">
 
 [**ildenteproibito**](https://github.com/ildenteproibito) — IL DENTE PROIBITO, Web Developer by ARES & [**Luke10-glitch**](https://github.com/Luke10-glitch), Founder of ARES
