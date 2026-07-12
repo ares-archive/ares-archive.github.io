@@ -845,7 +845,7 @@ const GameDetails: React.FC = () => {
 
                 <div className="aspect-video rounded-3xl overflow-hidden relative border border-brand-border shadow-2xl bg-black group" onContextMenu={(e) => e.preventDefault()}>
 
-                  <AnimatePresence>
+                  <AnimatePresence mode="wait">
 
                     {activeMedia && activeMedia.type === 'video' ? (
 
@@ -1493,7 +1493,7 @@ const GameDetails: React.FC = () => {
 
       {/* FULLSCREEN MODAL CON SENSOR OVERLAY */}
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
 
         {fullscreenIndex !== null && (
 
