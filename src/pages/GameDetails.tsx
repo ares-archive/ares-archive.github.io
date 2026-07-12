@@ -845,105 +845,83 @@ const GameDetails: React.FC = () => {
 
                 <div className="aspect-video rounded-3xl overflow-hidden relative border border-brand-border shadow-2xl bg-black group" onContextMenu={(e) => e.preventDefault()}>
 
-                  <AnimatePresence mode="wait">
+                  {activeMedia && activeMedia.type === 'video' ? (
 
-                    {activeMedia && activeMedia.type === 'video' ? (
+                    (() => {
 
-                      (() => {
+                      const embedUrl = getYouTubeEmbedUrl(activeMedia.url);
 
-                        const embedUrl = getYouTubeEmbedUrl(activeMedia.url);
-
-                        if (embedUrl) {
-
-                          return (
-
-                            <motion.iframe
-
-                              key={`video-${activeIndex}`}
-
-                              src={embedUrl}
-
-                              title={`${game.title} Trailer`}
-
-                              className="w-full h-full border-0 rounded-3xl"
-
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-
-                              allowFullScreen
-
-                              initial={{ opacity: 0 }}
-
-                              animate={{ opacity: 1 }}
-
-                              exit={{ opacity: 0 }}
-
-                            />
-
-                          );
-
-                        }
+                      if (embedUrl) {
 
                         return (
 
-                          <motion.video
+                          <iframe
 
                             key={`video-${activeIndex}`}
 
-                            src={activeMedia.url}
+                            src={embedUrl}
 
-                            controls
+                            title={`${game.title} Trailer`}
 
-                            autoPlay
+                            className="w-full h-full border-0 rounded-3xl"
 
-                            muted
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
 
-                            className="w-full h-full object-contain"
-
-                            onContextMenu={(e) => e.preventDefault()}
-
-                            initial={{ opacity: 0 }}
-
-                            animate={{ opacity: 1 }}
-
-                            exit={{ opacity: 0 }}
+                            allowFullScreen
 
                           />
 
                         );
 
-                      })()
+                      }
 
-                    ) : (
+                      return (
 
-                      activeMedia && (
+                        <video
 
-                        <motion.img
-
-                          key={`image-${activeIndex}`}
+                          key={`video-${activeIndex}`}
 
                           src={activeMedia.url}
 
-                          initial={{ opacity: 0 }}
+                          controls
 
-                          animate={{ opacity: 1 }}
+                          autoPlay
 
-                          exit={{ opacity: 0 }}
+                          muted
 
-                          className="w-full h-full object-cover cursor-zoom-in"
-
-                          onClick={() => setFullscreenIndex(activeIndex)}
+                          className="w-full h-full object-contain"
 
                           onContextMenu={(e) => e.preventDefault()}
 
-                          alt="Game Screenshot"
-
                         />
 
-                      )
+                      );
 
-                    )}
+                    })()
 
-                  </AnimatePresence>
+                  ) : (
+
+                    activeMedia && (
+
+                      <img
+
+                        key={`image-${activeIndex}`}
+
+                        src={activeMedia.url}
+
+                        className="w-full h-full object-cover cursor-zoom-in animate-fade-in"
+
+                        onClick={() => setFullscreenIndex(activeIndex)}
+
+                        onContextMenu={(e) => e.preventDefault()}
+
+                        alt="Game Screenshot"
+
+                      />
+
+                    )
+
+                  )}
 
                   <button onClick={handlePrevMedia} className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-brand-azure p-3 rounded-full text-white opacity-0 group-hover:opacity-100 transition-all cursor-pointer z-10 hover:scale-105">
 
@@ -1493,27 +1471,25 @@ const GameDetails: React.FC = () => {
 
       {/* FULLSCREEN MODAL CON SENSOR OVERLAY */}
 
-      <AnimatePresence mode="wait">
+      {fullscreenIndex !== null && (
 
-        {fullscreenIndex !== null && (
+        <motion.div
 
-          <motion.div
+          initial={{ opacity: 0 }}
 
-            initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
 
-            animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
 
-            exit={{ opacity: 0 }}
+          onClick={() => setFullscreenIndex(null)}
 
-            onClick={() => setFullscreenIndex(null)}
+          onMouseMove={handleMouseMove}
 
-            onMouseMove={handleMouseMove}
+          className="fixed inset-0 z-[100] bg-black/95 flex flex-col justify-center items-center p-4 select-none transition-all"
 
-            className="fixed inset-0 z-[100] bg-black/95 flex flex-col justify-center items-center p-4 select-none transition-all"
+          style={{ cursor: showCursor ? 'default' : 'none' }}
 
-            style={{ cursor: showCursor ? 'default' : 'none' }}
-
-          >
+        >
 
             {/* Pulsante di chiusura (sfuma insieme al cursore) */}
 
@@ -1644,10 +1620,6 @@ const GameDetails: React.FC = () => {
           </motion.div>
 
         )}
-
-      </AnimatePresence>
-
-
 
     </motion.div>
 
