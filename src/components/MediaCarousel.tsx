@@ -61,7 +61,6 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
-  // Reset activeIndex se fuori bound
   useEffect(() => {
     if (activeIndex >= items.length) {
       setActiveIndex(0);
@@ -81,7 +80,6 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
     setActiveIndex(prev => prev + 1);
   }, [canGoNext]);
 
-  // --- Touch / Swipe ---
   const handleTouchStart = (e: React.TouchEvent) => {
     if (fullscreenIndex !== null) return;
     touchStartX.current = e.touches[0].clientX;
@@ -104,7 +102,6 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
     touchEndX.current = null;
   };
 
-  // --- Keyboard per carousel principale ---
   useEffect(() => {
     if (fullscreenIndex !== null) return;
     const handleKey = (e: KeyboardEvent) => {
@@ -115,7 +112,6 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
     return () => window.removeEventListener('keydown', handleKey);
   }, [fullscreenIndex, goPrev, goNext, canGoPrev, canGoNext]);
 
-  // --- Keyboard per fullscreen ---
   useEffect(() => {
     if (fullscreenIndex === null) return;
     const handleKey = (e: KeyboardEvent) => {
@@ -135,7 +131,6 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
     return () => window.removeEventListener('keydown', handleKey);
   }, [fullscreenIndex, items.length]);
 
-  // --- Fullscreen cursor auto-hide ---
   const handleMouseMove = useCallback(() => {
     setShowCursor(true);
     if (cursorTimeoutRef.current) clearTimeout(cursorTimeoutRef.current);
@@ -174,7 +169,7 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
 
       {/* MAIN DISPLAY */}
       <div
-        className="aspect-video rounded-3xl overflow-hidden relative border border-brand-border shadow-2xl bg-black group"
+        className="aspect-video rounded-3xl overflow-hidden relative border border-brand-border shadow-2xl bg-black"
         onContextMenu={(e) => e.preventDefault()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -198,11 +193,10 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
             </div>
           </div>
         ) : (
-          <div className="relative w-full h-full">
+          <div className="relative w-full h-full cursor-zoom-in" onClick={() => setFullscreenIndex(activeIndex)}>
             <img
               src={activeItem.url}
-              className="w-full h-full object-cover cursor-zoom-in"
-              onClick={() => setFullscreenIndex(activeIndex)}
+              className="w-full h-full object-cover"
               onContextMenu={(e) => e.preventDefault()}
               alt={`${title} Screenshot ${activeIndex + 1}`}
               onError={(e) => {
@@ -212,10 +206,10 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
           </div>
         )}
 
-        {/* Pulsante Fullscreen - sempre visibile */}
+        {/* Pulsante Fullscreen - SEMPRE VISIBILE */}
         <button
           onClick={() => setFullscreenIndex(activeIndex)}
-          className="absolute top-4 right-4 bg-black/60 hover:bg-brand-azure p-2 rounded-full text-white opacity-0 group-hover:opacity-100 transition-all z-20"
+          className="absolute top-4 right-4 bg-black/60 hover:bg-brand-azure p-2.5 rounded-full text-white z-20 transition-colors"
           title="Fullscreen"
         >
           <Maximize2 className="w-4 h-4" />
@@ -226,7 +220,7 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
           <button
             onClick={goPrev}
             aria-label="Previous"
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-brand-azure p-3 rounded-full text-white opacity-0 group-hover:opacity-100 transition-all cursor-pointer z-10 hover:scale-105"
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-brand-azure p-3 rounded-full text-white z-10 hover:scale-105 transition-all"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -237,7 +231,7 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
           <button
             onClick={goNext}
             aria-label="Next"
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-brand-azure p-3 rounded-full text-white opacity-0 group-hover:opacity-100 transition-all cursor-pointer z-10 hover:scale-105"
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-brand-azure p-3 rounded-full text-white z-10 hover:scale-105 transition-all"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
@@ -339,7 +333,6 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
                 />
               )}
 
-              {/* Solo se NON sei al primo */}
               {canFsPrev && (
                 <button
                   onClick={(e) => {
@@ -354,7 +347,6 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
                 </button>
               )}
 
-              {/* Solo se NON sei all'ultimo */}
               {canFsNext && (
                 <button
                   onClick={(e) => {
