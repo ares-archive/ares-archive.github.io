@@ -143,7 +143,7 @@ const GameDetails: React.FC = () => {
     const { error } = await supabase.from('comments').insert([
       {
         game_id: parseInt(id, 10),
-        user_id: currentUser.id, // IMPORTANTE: passa user_id per RLS
+        user_id: currentUser.id,
         username: currentUser.globalName || currentUser.username,
         avatar_url: currentUser.avatar,
         comment_text: cleanComment
@@ -163,13 +163,6 @@ const GameDetails: React.FC = () => {
   const handleSubmitReport = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reportReason.trim() || !id) return;
-    
-    // Verifica rate limit server-side via RPC (opzionale)
-    // const { data: canReport } = await supabase.rpc('check_report_rate_limit', {
-    //   p_game_id: parseInt(id, 10),
-    //   p_user_id: currentUser?.id
-    // });
-    // if (!canReport) { alert('Rate limit exceeded'); return; }
     
     setSubmittingReport(true);
     const { error } = await supabase.from('reports').insert([
@@ -384,7 +377,61 @@ const GameDetails: React.FC = () => {
                     Report Broken Game
                   </button>
 
-                  {/* ... resto della sidebar senza cambiamenti ... */}
+                  {/* ======================================= */}
+                  {/* FONTI DI PRESERVAZIONE ED EMULAZIONE */}
+                  {/* ======================================= */}
+                  <div className="pt-8 border-t border-brand-border space-y-3">
+                    <span className="text-[10px] font-black text-[#5865F2] uppercase tracking-widest block mb-2">{t('gameDetails.preservationSources')}</span>
+                    
+                    {/* STEAM ORIGINALE */}
+                    {game.steamUrl && (
+                      <a href={game.steamUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#1b2838]/80 hover:bg-[#2a475e]/80 border border-[#2a475e]/30 text-[#66c0f4] text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider shadow-lg shadow-[#1b2838]/10 hover:shadow-[#1b2838]/20 hover:-translate-y-0.5 active:translate-y-0">
+                        <SteamIcon className="w-4 h-4 shrink-0" />
+                        {t('gameDetails.originalSteamSource')}
+                      </a>
+                    )}
+                    
+                    {/* CS.RIN.RU THREAD OPPURE GOLDBERG */}
+                    {game.goldbergUrl?.toLowerCase().includes('cs.rin.ru') ? (
+                      <a href={game.goldbergUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#1e2330]/90 hover:bg-[#272d42]/90 border border-[#272d42]/30 text-[#00ffcc] text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider shadow-lg shadow-[#1e2330]/15 hover:shadow-[#1e2330]/30 hover:-translate-y-0.5 active:translate-y-0">
+                        <CsRinIcon className="w-4 h-4 shrink-0" />
+                        {t('gameDetails.csrinThread')}
+                      </a>
+                    ) : (
+                      <a href={game.goldbergUrl || "https://github.com/Detanup01/gbe_fork"} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#24292e]/80 hover:bg-[#2f363d]/80 border border-[#2f363d]/30 text-[#fafbfc] text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider shadow-lg shadow-[#24292e]/10 hover:shadow-[#24292e]/20 hover:-translate-y-0.5 active:translate-y-0">
+                        <GithubIcon className="w-4 h-4 shrink-0" />
+                        {t('gameDetails.goldbergFork')}
+                      </a>
+                    )}
+                  </div>
+
+                  {/* ======================================= */}
+                  {/* ACQUISTA LEGALMENTE (SUPPORTA SVILUPPATORI) */}
+                  {/* ======================================= */}
+                  <div className="pt-8 border-t border-brand-border space-y-3">
+                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-2">{t('gameDetails.supportDevelopers')}</span>
+                    
+                    {game.steamUrl && (
+                      <a href={game.steamUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#1b2838] hover:bg-[#2a475e] text-[#66c0f4] text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider">
+                        <SteamIcon className="w-4 h-4" />
+                        {t('gameDetails.buyOnSteam')}
+                      </a>
+                    )}
+                    
+                    {game.gogUrl && (
+                      <a href={game.gogUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#110d26] hover:bg-[#5c2e91] text-[#bf9cff] text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider">
+                        <span className="w-4 h-4 flex items-center justify-center">G</span>
+                        {t('gameDetails.buyOnGog')}
+                      </a>
+                    )}
+                    
+                    {game.epicUrl && (
+                      <a href={game.epicUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#191919] hover:bg-[#2a2a2a] text-[#f5f5f5] text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider">
+                        <span className="w-4 h-4 flex items-center justify-center">▣</span>
+                        {t('gameDetails.buyOnEpic')}
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
