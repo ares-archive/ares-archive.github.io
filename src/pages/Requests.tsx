@@ -14,9 +14,29 @@ import {
   LogOut,
   User,
   ShieldCheck,
-  XCircle
+  XCircle,
+  Shield,
+  Layers
 } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
+
+// Lista ufficiale degli sviluppatori autorizzati ad accedere alla modalità Developer
+const DEVELOPERS_LIST = [
+  "IL DENTE PROIBITO",
+  "🥏Lukinok🥏",
+  "ShadowEddyx12"
+];
+
+// Helper per verificare se l'utente Discord è uno sviluppatore di ARES
+const checkIsDeveloper = (username: string): boolean => {
+  if (!username) return false;
+  const cleanUsername = username.trim().toLowerCase();
+  return DEVELOPERS_LIST.some(dev => {
+    const cleanDev = dev.trim().toLowerCase();
+    // Corrispondenza esatta o parziale (es. lukinok con o senza emoji)
+    return cleanUsername === cleanDev || cleanUsername.includes(cleanDev) || cleanDev.includes(cleanUsername);
+  });
+};
 
 // Icona Steam ufficiale vettoriale
 const SteamIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -54,19 +74,24 @@ const Requests: React.FC = () => {
   const [userRequests, setUserRequests] = useState<any[]>([]);
   const [loadingUserRequests, setLoadingUserRequests] = useState(false);
 
-  // Gestione sessione utente e callback al caricamento
+  // Stato per l'interruttore della coda globale (solo visibile agli Sviluppatori)
+  const [showAllRequests, setShowAllRequests] = useState(true);
+
+  // Gestione sessione utente e callback al caricamento con controllo del provider
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
+      const isDiscordProvider = session?.user?.app_metadata?.provider === 'discord';
+      if (session?.user && isDiscordProvider) {
         setUser(session.user);
-        fetchUserRequests(session.user);
+        fetchUserRequests(session.user, showAllRequests);
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
+      const isDiscordProvider = session?.user?.app_metadata?.provider === 'discord';
+      if (session?.user && isDiscordProvider) {
         setUser(session.user);
-        fetchUserRequests(session.user);
+        fetchUserRequests(session.user, showAllRequests);
       } else {
         setUser(null);
         setUserRequests([]);
@@ -74,7 +99,7 @@ const Requests: React.FC = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [showAllRequests]);
 
   // Monitora in tempo reale lo stato dell'anti-flood cooldown (24 ore)
   useEffect(() => {
@@ -100,11 +125,10 @@ const Requests: React.FC = () => {
   const getDiscordUsername = (userObj: any): string => {
     if (!userObj) return '';
     const metadata = userObj.user_metadata;
-    // Supabase salva solitamente l'username discord in custom_claims, preferred_username, full_name o name
     return metadata.preferred_username || metadata.full_name || metadata.name || '';
   };
 
-  // Compila e blocca automaticamente il tag Discord se l'utente è loggato
+  // Compila e blocca automaticamente il tag Discord se l'utente è loggato con Discord
   useEffect(() => {
     if (user) {
       setDiscordTag(getDiscordUsername(user));
@@ -113,18 +137,22 @@ const Requests: React.FC = () => {
     }
   }, [user]);
 
-  // Recupera le richieste inoltrate da quel preciso utente dal DB
-  const fetchUserRequests = async (currentUser: any) => {
+  // Recupera le richieste. Se l'utente è Sviluppatore, può scegliere di caricarle tutte
+  const fetchUserRequests = async (currentUser: any, allReqs: boolean) => {
     if (!currentUser) return;
     setLoadingUserRequests(true);
     const tag = getDiscordUsername(currentUser);
+    const isDev = checkIsDeveloper(tag);
     
     if (tag) {
-      const { data, error } = await supabase
-        .from('game_requests')
-        .select('*')
-        .ilike('discord_tag', `%${tag}%`) // Case-insensitive match per trovare le richieste dell'utente
-        .order('id', { ascending: false });
+      let query = supabase.from('game_requests').select('*');
+      
+      // Se NON è sviluppatore, o se lo sviluppatore decide di vedere solo le sue
+      if (!isDev || !allReqs) {
+        query = query.ilike('discord_tag', `%${tag}%`);
+      }
+
+      const { data, error } = await query.order('id', { ascending: false });
 
       if (!error && data) {
         setUserRequests(data);
@@ -170,15 +198,20 @@ const Requests: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const lastRequest = localStorage.getItem('ares_last_request_time');
-    if (lastRequest) {
-      const elapsed = Date.now() - parseInt(lastRequest, 10);
-      const cooldownDuration = 86400000; 
-      if (elapsed < cooldownDuration) {
-        setSubmitStatus('error');
-        const hoursLeft = Math.ceil((cooldownDuration - elapsed) / (1000 * 60 * 60));
-        setErrorMessage(`You must wait ${hoursLeft} hours before submitting another request`);
-        return;
+    const isUserDeveloper = checkIsDeveloper(discordTag);
+
+    // I DEVs saltano il controllo del cooldown
+    if (!isUserDeveloper) {
+      const lastRequest = localStorage.getItem('ares_last_request_time');
+      if (lastRequest) {
+        const elapsed = Date.now() - parseInt(lastRequest, 10);
+        const cooldownDuration = 86400000; 
+        if (elapsed < cooldownDuration) {
+          setSubmitStatus('error');
+          const hoursLeft = Math.ceil((cooldownDuration - elapsed) / (1000 * 60 * 60));
+          setErrorMessage(`You must wait ${hoursLeft} hours before submitting another request`);
+          return;
+        }
       }
     }
 
@@ -216,9 +249,8 @@ const Requests: React.FC = () => {
       setTitle('');
       setNotes('');
       
-      // Se l'utente è loggato, aggiorna istantaneamente la lista delle sue richieste
       if (user) {
-        fetchUserRequests(user);
+        fetchUserRequests(user, showAllRequests);
       }
     } catch (err: any) {
       console.error('Error submitting request:', err);
@@ -229,13 +261,17 @@ const Requests: React.FC = () => {
     }
   };
 
-  // Traduzioni locali per il modulo di tracciamento
+  // Traduzioni locali per il modulo di tracciamento e della dashboard sviluppatori
   const textTrackTitle = lang === 'it' ? 'Traccia le Tue Richieste' : 'Track Your Requests';
   const textTrackDesc = lang === 'it' ? 'Collega il tuo account Discord per verificare lo stato di approvazione delle tue richieste in tempo reale.' : 'Connect your Discord account to view the real-time status of your requests.';
   const textLoginBtn = lang === 'it' ? 'Accedi con Discord' : 'Login with Discord';
   const textLogoutBtn = lang === 'it' ? 'Disconnetti' : 'Disconnect';
   const textLoadingReqs = lang === 'it' ? 'Recupero richieste...' : 'Retrieving requests...';
   const textNoReqs = lang === 'it' ? 'Nessuna richiesta di preservazione trovata a tuo nome.' : 'No preservation requests found for your Discord username.';
+
+  // Variabili Sviluppatore
+  const userDiscordTag = user ? getDiscordUsername(user) : '';
+  const isCurrentUserDeveloper = checkIsDeveloper(userDiscordTag);
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
@@ -273,7 +309,7 @@ const Requests: React.FC = () => {
                 onChange={handleAppIdInput}
                 className="w-full px-4 py-3 bg-brand-dark border border-brand-border rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand-azure transition-colors"
                 required
-                disabled={cooldownTimeLeft > 0}
+                disabled={cooldownTimeLeft > 0 && !isCurrentUserDeveloper}
               />
               <p className="text-[10px] text-gray-500 mt-1.5">
                 {t('requests.appIdHelp')}
@@ -303,7 +339,7 @@ const Requests: React.FC = () => {
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full px-4 py-3 bg-brand-dark border border-brand-border rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand-azure transition-colors"
                 required
-                disabled={cooldownTimeLeft > 0}
+                disabled={cooldownTimeLeft > 0 && !isCurrentUserDeveloper}
               />
             </div>
 
@@ -319,7 +355,7 @@ const Requests: React.FC = () => {
                 value={discordTag}
                 onChange={(e) => setDiscordTag(e.target.value)}
                 className="w-full px-4 py-3 bg-brand-dark border border-brand-border rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand-azure transition-colors disabled:opacity-50"
-                disabled={cooldownTimeLeft > 0 || !!user} // Disabilitato se l'utente è autenticato con Discord
+                disabled={(cooldownTimeLeft > 0 && !isCurrentUserDeveloper) || !!user} 
               />
               <p className="text-[10px] text-gray-500 mt-1.5">
                 {user ? (
@@ -345,12 +381,12 @@ const Requests: React.FC = () => {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="w-full px-4 py-3 bg-brand-dark border border-brand-border rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand-azure transition-colors resize-none"
-                disabled={cooldownTimeLeft > 0}
+                disabled={cooldownTimeLeft > 0 && !isCurrentUserDeveloper}
               />
             </div>
 
             {/* Avviso Cooldown Attivo */}
-            {cooldownTimeLeft > 0 && (
+            {cooldownTimeLeft > 0 && !isCurrentUserDeveloper && (
               <div className="flex items-start gap-3 p-4 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-xl animate-fade-in">
                 <Clock className="w-5 h-5 shrink-0 mt-0.5 animate-pulse" />
                 <div>
@@ -362,10 +398,23 @@ const Requests: React.FC = () => {
               </div>
             )}
 
+            {/* Avviso Developer Privilegi Attivi */}
+            {isCurrentUserDeveloper && (
+              <div className="flex items-start gap-3 p-4 bg-brand-azure/10 border border-brand-azure/20 text-brand-azure rounded-xl animate-fade-in">
+                <Shield className="w-5 h-5 shrink-0 mt-0.5 animate-pulse" />
+                <div>
+                  <h4 className="font-bold text-sm text-white">Developer Mode Bypass</h4>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Sei loggato come Sviluppatore. Il limite di flood di 24 ore è disabilitato sul tuo account.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Submission Button */}
             <button
               type="submit"
-              disabled={isSubmitting || cooldownTimeLeft > 0}
+              disabled={isSubmitting || (cooldownTimeLeft > 0 && !isCurrentUserDeveloper)}
               className="w-full flex items-center justify-center gap-2 py-3.5 bg-brand-azure hover:bg-brand-azure/80 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all disabled:opacity-50"
             >
               {isSubmitting ? (
@@ -373,7 +422,7 @@ const Requests: React.FC = () => {
                   <Loader2 className="w-4 h-4 animate-spin" />
                   {t('requests.submitting')}
                 </>
-              ) : cooldownTimeLeft > 0 ? (
+              ) : (cooldownTimeLeft > 0 && !isCurrentUserDeveloper) ? (
                 <>
                   <Clock className="w-4 h-4" />
                   {t('requests.waitCooldown', { seconds: cooldownTimeLeft })}
@@ -438,7 +487,7 @@ const Requests: React.FC = () => {
         {/* Guidelines & Live Status Tracking Sidebar */}
         <div className="lg:col-span-5 space-y-6">
           
-          {/* SEZIONE 1: TRACCIAMENTO LIVE RICHIESTE DISCORD (NUOVO) */}
+          {/* SEZIONE 1: TRACCIAMENTO LIVE RICHIESTE DISCORD */}
           <div className="bg-brand-card border border-brand-border rounded-2xl p-6 shadow-xl relative overflow-hidden">
             {/* Sfumatura soffusa neon blu stile Discord */}
             <div className="absolute top-0 right-0 -mt-6 -mr-6 w-24 h-24 bg-[#5865F2] rounded-full blur-[40px] opacity-10 pointer-events-none" />
@@ -465,37 +514,66 @@ const Requests: React.FC = () => {
             ) : (
               <div className="space-y-5">
                 {/* Dettagli Profilo Discord Collegato */}
-                <div className="flex items-center justify-between p-3.5 bg-brand-dark/60 border border-brand-border rounded-xl">
-                  <div className="flex items-center gap-3">
-                    {user.user_metadata?.avatar_url ? (
-                      <img 
-                        src={user.user_metadata.avatar_url} 
-                        alt="" 
-                        className="w-9 h-9 rounded-full border border-brand-border shadow-inner"
-                      />
-                    ) : (
-                      <div className="w-9 h-9 rounded-full bg-brand-azure/10 flex items-center justify-center font-bold text-brand-azure text-xs">
-                        {getDiscordUsername(user).substring(0, 2).toUpperCase()}
+                <div className="flex flex-col gap-3 p-3.5 bg-brand-dark/60 border border-brand-border rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {user.user_metadata?.avatar_url ? (
+                        <img 
+                          src={user.user_metadata.avatar_url} 
+                          alt="" 
+                          className="w-9 h-9 rounded-full border border-brand-border shadow-inner"
+                        />
+                      ) : (
+                        <div className="w-9 h-9 rounded-full bg-brand-azure/10 flex items-center justify-center font-bold text-brand-azure text-xs">
+                          {getDiscordUsername(user).substring(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-xs font-bold text-white leading-tight flex items-center gap-1.5 flex-wrap">
+                          @{getDiscordUsername(user)}
+                          {isCurrentUserDeveloper && (
+                            <span className="text-[8px] bg-brand-azure/20 text-brand-azure border border-brand-azure/30 px-1.5 py-0.5 rounded font-black uppercase tracking-wider flex items-center gap-0.5">
+                              <Shield className="w-2 h-2" />
+                              Dev
+                            </span>
+                          )}
+                        </p>
+                        <span className="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Connected</span>
                       </div>
-                    )}
-                    <div>
-                      <p className="text-xs font-bold text-white leading-tight">
-                        @{getDiscordUsername(user)}
-                      </p>
-                      <span className="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Status: Connected</span>
                     </div>
+                    <button
+                      type="button"
+                      onClick={handleDiscordLogout}
+                      className="text-[10px] font-black uppercase text-brand-red hover:underline flex items-center gap-1"
+                    >
+                      <LogOut className="w-3 h-3" />
+                      {textLogoutBtn}
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleDiscordLogout}
-                    className="text-[10px] font-black uppercase text-brand-red hover:underline flex items-center gap-1"
-                  >
-                    <LogOut className="w-3 h-3" />
-                    {textLogoutBtn}
-                  </button>
+
+                  {/* Interruttore Monitoraggio Globale (Solo per Sviluppatori) */}
+                  {isCurrentUserDeveloper && (
+                    <div className="border-t border-brand-border/40 pt-2.5 flex items-center justify-between gap-4">
+                      <span className="text-[9px] text-gray-500 uppercase font-mono font-bold flex items-center gap-1">
+                        <Layers className="w-3 h-3 text-brand-azure" />
+                        Developer Monitor Queue
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setShowAllRequests(prev => !prev)}
+                        className={`px-2.5 py-1 rounded text-[8px] font-black uppercase tracking-wider border transition-all ${
+                          showAllRequests 
+                            ? 'bg-brand-azure/20 text-brand-azure border-brand-azure/30' 
+                            : 'bg-brand-dark text-gray-500 border-brand-border'
+                        }`}
+                      >
+                        {showAllRequests ? 'All Requests' : 'My Reqs Only'}
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                {/* Lista scorrevole delle richieste inoltrate */}
+                {/* Lista scorrevole delle richieste */}
                 <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
                   {loadingUserRequests ? (
                     <div className="flex items-center justify-center py-8 gap-2">
@@ -519,7 +597,15 @@ const Requests: React.FC = () => {
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <span className="font-bold text-white truncate max-w-[150px]">{req.title}</span>
+                          <div className="flex flex-col gap-1 truncate">
+                            <span className="font-bold text-white truncate max-w-[150px]">{req.title}</span>
+                            {/* Se lo sviluppatore sta vedendo la coda globale, mostra il mittente di ogni richiesta */}
+                            {isCurrentUserDeveloper && showAllRequests && (
+                              <span className="text-[9px] text-brand-azure font-medium">
+                                By: @{req.discord_tag || 'Guest'}
+                              </span>
+                            )}
+                          </div>
                           <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md shrink-0 flex items-center gap-1 ${
                             req.status === 'pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
                             req.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
