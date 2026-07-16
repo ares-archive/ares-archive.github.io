@@ -1,4 +1,4 @@
-name: Deploy Next.js to GitHub Pages
+name: Deploy Vite to GitHub Pages
 
 on:
   push:
@@ -38,6 +38,7 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_RAWG_API_KEY: ${{ secrets.VITE_RAWG_API_KEY }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
