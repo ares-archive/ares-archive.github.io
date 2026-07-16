@@ -178,7 +178,7 @@ const AdminDashboard = () => {
 
     setFetchingRawg(true);
     try {
-      const apiKey = "ca55a690f85e47de9a466956ba72663d";
+      const apiKey = import.meta.env.VITE_RAWG_API_KEY || '';
       const searchRes = await fetch(`https://api.rawg.io/api/games?key=${apiKey}&search=${encodeURIComponent(query)}&page_size=1`);
       const searchData = await searchRes.json() as any;
 

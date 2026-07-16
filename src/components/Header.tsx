@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, User, LogOut, Shield, Sun, Moon } from 'lucide-react';
+import { Search, User, LogOut, Sun, Moon } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
 import { useLanguage } from '../i18n/LanguageContext';
@@ -35,7 +35,6 @@ const HeaderComponent: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleThem
   const location = useLocation();
   const { t } = useLanguage();
   const [discordUser, setDiscordUser] = useState<any>(null);
-  const isAdmin = localStorage.getItem('ares_admin_token') === 'ares-secret-token';
   const isAdminRoute = location.pathname.startsWith('/admin');
 
   useEffect(() => {
@@ -118,11 +117,6 @@ const HeaderComponent: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleThem
           {/* Link Hypervisor Crack aggiunto con lo stesso stile visivo */}
           <Link to="/hypervisor" className="text-sm font-semibold hover:text-brand-azure transition-colors opacity-70 hidden md:block">{t('header.hypervisor')}</Link>
           
-          {isAdmin && isAdminRoute && (
-            <Link to="/admin" className="p-2 text-brand-azure hover:bg-brand-azure/10 rounded-lg transition-colors">
-              <Shield className="w-5 h-5" />
-            </Link>
-          )}
 
           {discordUser ? (
             <div className="flex items-center gap-3 pl-4 border-l border-brand-border animate-fade-in">
