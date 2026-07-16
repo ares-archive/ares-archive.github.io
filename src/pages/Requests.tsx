@@ -10,7 +10,11 @@ import {
   CheckCircle, 
   AlertTriangle, 
   ExternalLink,
-  Clock
+  Clock,
+  LogOut,
+  User,
+  ShieldCheck,
+  XCircle
 } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
 
@@ -26,8 +30,15 @@ const SteamIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   </svg>
 );
 
+// Icona Discord SVG ufficiale per il pulsante di login
+const DiscordIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg viewBox="0 0 127.14 96.36" fill="currentColor" {...props}>
+    <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83,96.67,96.67,0,0,0-22,.06A73.34,73.34,0,0,0,48.58,0,105.4,105.4,0,0,0,18.07,8.07C1.79,32.42-2.72,56.12,1.21,89.28a105.82,105.82,0,0,0,32,16.15,79,77,0,0,0,6.57-10.66,68.86,68.86,0,0,1-10-4.78c.85-.63,1.66-1.3,2.44-2a75.52,75.52,0,0,0,60.82,0c.79.7,1.6,1.37,2.44,2a67.37,67.37,0,0,1-10,4.77,75.36,75.36,0,0,0,6.58,10.67,105.13,105.13,0,0,0,32-16.15C130.66,50.55,125.71,27.14,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z"/>
+  </svg>
+);
+
 const Requests: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [appId, setAppId] = useState('');
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
@@ -38,13 +49,40 @@ const Requests: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [cooldownTimeLeft, setCooldownTimeLeft] = useState(0);
 
+  // Stati del Tracciamento Richieste ed Autenticazione Discord
+  const [user, setUser] = useState<any>(null);
+  const [userRequests, setUserRequests] = useState<any[]>([]);
+  const [loadingUserRequests, setLoadingUserRequests] = useState(false);
+
+  // Gestione sessione utente e callback al caricamento
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(session.user);
+        fetchUserRequests(session.user);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        fetchUserRequests(session.user);
+      } else {
+        setUser(null);
+        setUserRequests([]);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   // Monitora in tempo reale lo stato dell'anti-flood cooldown (24 ore)
   useEffect(() => {
     const checkCooldown = () => {
       const lastRequest = localStorage.getItem('ares_last_request_time');
       if (lastRequest) {
         const elapsed = Date.now() - parseInt(lastRequest, 10);
-        const cooldownDuration = 86400000; // 24 ore in millisecondi
+        const cooldownDuration = 86400000; // 24 ore
         if (elapsed < cooldownDuration) {
           setCooldownTimeLeft(Math.ceil((cooldownDuration - elapsed) / 1000));
         } else {
@@ -58,6 +96,63 @@ const Requests: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Estrae in modo sicuro il tag o l'username dal metadata di Discord
+  const getDiscordUsername = (userObj: any): string => {
+    if (!userObj) return '';
+    const metadata = userObj.user_metadata;
+    // Supabase salva solitamente l'username discord in custom_claims, preferred_username, full_name o name
+    return metadata.preferred_username || metadata.full_name || metadata.name || '';
+  };
+
+  // Compila e blocca automaticamente il tag Discord se l'utente è loggato
+  useEffect(() => {
+    if (user) {
+      setDiscordTag(getDiscordUsername(user));
+    } else {
+      setDiscordTag('');
+    }
+  }, [user]);
+
+  // Recupera le richieste inoltrate da quel preciso utente dal DB
+  const fetchUserRequests = async (currentUser: any) => {
+    if (!currentUser) return;
+    setLoadingUserRequests(true);
+    const tag = getDiscordUsername(currentUser);
+    
+    if (tag) {
+      const { data, error } = await supabase
+        .from('game_requests')
+        .select('*')
+        .ilike('discord_tag', `%${tag}%`) // Case-insensitive match per trovare le richieste dell'utente
+        .order('id', { ascending: false });
+
+      if (!error && data) {
+        setUserRequests(data);
+      }
+    }
+    setLoadingUserRequests(false);
+  };
+
+  // Handler per autenticazione OAuth tramite Discord su Supabase
+  const handleDiscordLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'discord',
+      options: {
+        redirectTo: window.location.origin + '/requests', // ritorna direttamente su questa pagina
+      }
+    });
+    if (error) {
+      alert("Errore connessione Discord: " + error.message);
+    }
+  };
+
+  // Log-out dell'account
+  const handleDiscordLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setUserRequests([]);
+  };
+
   // Rileva automaticamente l'AppID se l'utente incolla un URL completo di Steam
   const handleAppIdInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawVal = e.target.value;
@@ -67,7 +162,6 @@ const Requests: React.FC = () => {
     if (match && match[1]) {
       setAppId(match[1]);
     } else {
-      // Consente solo caratteri numerici se non è un link
       const digits = rawVal.replace(/\D/g, '');
       setAppId(digits);
     }
@@ -76,11 +170,10 @@ const Requests: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Controllo client-side anti-flood (24 ore)
     const lastRequest = localStorage.getItem('ares_last_request_time');
     if (lastRequest) {
       const elapsed = Date.now() - parseInt(lastRequest, 10);
-      const cooldownDuration = 86400000; // 24 ore in millisecondi
+      const cooldownDuration = 86400000; 
       if (elapsed < cooldownDuration) {
         setSubmitStatus('error');
         const hoursLeft = Math.ceil((cooldownDuration - elapsed) / (1000 * 60 * 60));
@@ -117,15 +210,16 @@ const Requests: React.FC = () => {
       }
 
       setSubmitStatus('success');
-      
-      // Salva l'ora corrente come marcatore dell'ultimo invio riuscito per l'anti-flood
       localStorage.setItem('ares_last_request_time', Date.now().toString());
 
-      // Pulisce i campi in caso di successo
       setAppId('');
       setTitle('');
       setNotes('');
-      setDiscordTag('');
+      
+      // Se l'utente è loggato, aggiorna istantaneamente la lista delle sue richieste
+      if (user) {
+        fetchUserRequests(user);
+      }
     } catch (err: any) {
       console.error('Error submitting request:', err);
       setSubmitStatus('error');
@@ -134,6 +228,14 @@ const Requests: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+
+  // Traduzioni locali per il modulo di tracciamento
+  const textTrackTitle = lang === 'it' ? 'Traccia le Tue Richieste' : 'Track Your Requests';
+  const textTrackDesc = lang === 'it' ? 'Collega il tuo account Discord per verificare lo stato di approvazione delle tue richieste in tempo reale.' : 'Connect your Discord account to view the real-time status of your requests.';
+  const textLoginBtn = lang === 'it' ? 'Accedi con Discord' : 'Login with Discord';
+  const textLogoutBtn = lang === 'it' ? 'Disconnetti' : 'Disconnect';
+  const textLoadingReqs = lang === 'it' ? 'Recupero richieste...' : 'Retrieving requests...';
+  const textNoReqs = lang === 'it' ? 'Nessuna richiesta di preservazione trovata a tuo nome.' : 'No preservation requests found for your Discord username.';
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
@@ -205,7 +307,7 @@ const Requests: React.FC = () => {
               />
             </div>
 
-            {/* Optional Discord Tag */}
+            {/* Discord Tag Input */}
             <div>
               <label htmlFor="discordTag" className="block text-xs font-black uppercase text-gray-400 tracking-wider mb-2">
                 {t('requests.discordLabel')}
@@ -216,11 +318,18 @@ const Requests: React.FC = () => {
                 placeholder={t('requests.discordPlaceholder')}
                 value={discordTag}
                 onChange={(e) => setDiscordTag(e.target.value)}
-                className="w-full px-4 py-3 bg-brand-dark border border-brand-border rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand-azure transition-colors"
-                disabled={cooldownTimeLeft > 0}
+                className="w-full px-4 py-3 bg-brand-dark border border-brand-border rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand-azure transition-colors disabled:opacity-50"
+                disabled={cooldownTimeLeft > 0 || !!user} // Disabilitato se l'utente è autenticato con Discord
               />
               <p className="text-[10px] text-gray-500 mt-1.5">
-                {t('requests.discordHelp')}
+                {user ? (
+                  <span className="text-brand-azure font-bold flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    Collegato con successo al tuo profilo Discord attivo.
+                  </span>
+                ) : (
+                  t('requests.discordHelp')
+                )}
               </p>
             </div>
 
@@ -300,7 +409,6 @@ const Requests: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Se l'errore è dovuto alla tabella mancante, mostra le istruzioni SQL */}
                 {errorMessage.includes('does not exist') && (
                   <div className="mt-3 p-3 bg-brand-dark border border-brand-border rounded-lg">
                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">
@@ -327,8 +435,114 @@ const Requests: React.FC = () => {
           </form>
         </div>
 
-        {/* Guidelines Side panel */}
+        {/* Guidelines & Live Status Tracking Sidebar */}
         <div className="lg:col-span-5 space-y-6">
+          
+          {/* SEZIONE 1: TRACCIAMENTO LIVE RICHIESTE DISCORD (NUOVO) */}
+          <div className="bg-brand-card border border-brand-border rounded-2xl p-6 shadow-xl relative overflow-hidden">
+            {/* Sfumatura soffusa neon blu stile Discord */}
+            <div className="absolute top-0 right-0 -mt-6 -mr-6 w-24 h-24 bg-[#5865F2] rounded-full blur-[40px] opacity-10 pointer-events-none" />
+
+            <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider flex items-center gap-2">
+              <Clock className="w-5 h-5 text-brand-azure" />
+              {textTrackTitle}
+            </h2>
+
+            {!user ? (
+              <div className="space-y-4">
+                <p className="text-xs text-gray-400 leading-relaxed">
+                  {textTrackDesc}
+                </p>
+                <button
+                  type="button"
+                  onClick={handleDiscordLogin}
+                  className="w-full flex items-center justify-center gap-2.5 py-3 bg-[#5865F2] hover:bg-[#4752C4] text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-md shadow-[#5865F2]/20 transform hover:-translate-y-0.5"
+                >
+                  <DiscordIcon className="w-4 h-4 text-white" />
+                  {textLoginBtn}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-5">
+                {/* Dettagli Profilo Discord Collegato */}
+                <div className="flex items-center justify-between p-3.5 bg-brand-dark/60 border border-brand-border rounded-xl">
+                  <div className="flex items-center gap-3">
+                    {user.user_metadata?.avatar_url ? (
+                      <img 
+                        src={user.user_metadata.avatar_url} 
+                        alt="" 
+                        className="w-9 h-9 rounded-full border border-brand-border shadow-inner"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-brand-azure/10 flex items-center justify-center font-bold text-brand-azure text-xs">
+                        {getDiscordUsername(user).substring(0, 2).toUpperCase()}
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-xs font-bold text-white leading-tight">
+                        @{getDiscordUsername(user)}
+                      </p>
+                      <span className="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Status: Connected</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleDiscordLogout}
+                    className="text-[10px] font-black uppercase text-brand-red hover:underline flex items-center gap-1"
+                  >
+                    <LogOut className="w-3 h-3" />
+                    {textLogoutBtn}
+                  </button>
+                </div>
+
+                {/* Lista scorrevole delle richieste inoltrate */}
+                <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                  {loadingUserRequests ? (
+                    <div className="flex items-center justify-center py-8 gap-2">
+                      <Loader2 className="w-4 h-4 text-brand-azure animate-spin" />
+                      <span className="text-xs text-gray-500">{textLoadingReqs}</span>
+                    </div>
+                  ) : userRequests.length === 0 ? (
+                    <div className="text-center py-8 bg-brand-dark/20 border border-dashed border-brand-border/40 rounded-xl">
+                      <p className="text-[11px] text-gray-500 italic px-4">
+                        {textNoReqs}
+                      </p>
+                    </div>
+                  ) : (
+                    userRequests.map((req) => (
+                      <div 
+                        key={req.id} 
+                        className={`p-3.5 bg-brand-dark/40 border rounded-xl text-xs flex flex-col gap-2 transition-all hover:bg-brand-dark/60 ${
+                          req.status === 'completed' ? 'border-emerald-500/20 bg-emerald-950/5 text-emerald-400' :
+                          req.status === 'rejected' ? 'border-red-500/10 bg-red-950/5 text-red-400' :
+                          'border-brand-border/60 text-gray-300'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <span className="font-bold text-white truncate max-w-[150px]">{req.title}</span>
+                          <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md shrink-0 flex items-center gap-1 ${
+                            req.status === 'pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                            req.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-red-500/10 text-red-400 border border-red-500/20'
+                          }`}>
+                            {req.status === 'pending' && <Clock className="w-2.5 h-2.5" />}
+                            {req.status === 'completed' && <CheckCircle className="w-2.5 h-2.5" />}
+                            {req.status === 'rejected' && <XCircle className="w-2.5 h-2.5" />}
+                            {req.status}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] text-gray-500 border-t border-brand-border/20 pt-2 font-mono">
+                          <span>AppID: {req.steam_appid}</span>
+                          <span>{new Date(req.created_at).toLocaleDateString('it-IT')}</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="bg-brand-card border border-brand-border rounded-2xl p-6 shadow-xl">
             <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider flex items-center gap-2">
               <Info className="w-5 h-5 text-brand-azure" />
