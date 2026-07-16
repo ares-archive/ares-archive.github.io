@@ -3,7 +3,6 @@ import {
   Plus, 
   Trash2, 
   ShieldAlert, 
-  CheckCircle2, 
   Video, 
   Image as ImageIcon, 
   X, 
