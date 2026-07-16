@@ -1,11 +1,21 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, User, LogOut, Sun, Moon } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
 import { useLanguage } from '../i18n/LanguageContext';
 import { LanguageSelector } from './LanguageSelector';
 import { ThemeSelector } from './ThemeSelector';
+import { supabase } from '../supabase';
+
+import { Session } from '@supabase/supabase-js';
+
+interface DiscordUser {
+  id: string;
+  username: string;
+  globalName: string;
+  avatar: string;
+}
 
 interface HeaderProps {
   onSearch: (query: string) => void;
@@ -14,7 +24,7 @@ interface HeaderProps {
 }
 
 // Funzione helper sicura per rilevare l'account di sviluppo autorizzato
-const checkIsDeveloper = (user: any): boolean => {
+const checkIsDeveloper = (user: DiscordUser | null): boolean => {
   if (!user) return false;
   
   const username = (user.username || '').toLowerCase().trim();
@@ -32,30 +42,73 @@ const checkIsDeveloper = (user: any): boolean => {
 
 const HeaderComponent: React.FC<HeaderProps> = ({ onSearch, isDark, onToggleTheme }) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { t } = useLanguage();
-  const [discordUser, setDiscordUser] = useState<any>(null);
-  const isAdminRoute = location.pathname.startsWith('/admin');
+  const [discordUser, setDiscordUser] = useState<DiscordUser | null>(null);
 
   useEffect(() => {
-    const loadUser = () => {
-      const user = localStorage.getItem('ares_discord_user');
-      if (user) setDiscordUser(JSON.parse(user));
+    const handleAuthChange = (session: Session | null) => {
+      if (session?.user && session.user.app_metadata?.provider === 'discord') {
+        const metadata = session.user.user_metadata;
+        const mappedUser = {
+          id: session.user.id,
+          username: metadata.preferred_username || metadata.name || '',
+          globalName: metadata.full_name || metadata.name || metadata.preferred_username || '',
+          avatar: metadata.avatar_url || 'https://cdn.discordapp.com/embed/avatars/0.png'
+        };
+        localStorage.setItem('ares_discord_user', JSON.stringify(mappedUser));
+        setDiscordUser(mappedUser);
+      } else {
+        const customUser = localStorage.getItem('ares_discord_user');
+        if (customUser) {
+          setDiscordUser(JSON.parse(customUser));
+        } else {
+          setDiscordUser(null);
+        }
+      }
     };
 
-    loadUser();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleAuthChange(session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      handleAuthChange(session);
+    });
+
+    const loadUser = () => {
+      const user = localStorage.getItem('ares_discord_user');
+      if (user) {
+        setDiscordUser(JSON.parse(user));
+      } else {
+        setDiscordUser(null);
+      }
+    };
+
     window.addEventListener('ares-discord-login', loadUser);
 
     return () => {
+      subscription.unsubscribe();
       window.removeEventListener('ares-discord-login', loadUser);
     };
   }, []);
 
   const handleDiscordConnect = useCallback(() => {
-    window.location.href = "https://discord.com/oauth2/authorize?client_id=1518053081919520799&response_type=code&redirect_uri=https%3A%2F%2Fares-archive.github.io%2Fdiscord-callback&scope=identify";
+    supabase.auth.signInWithOAuth({
+      provider: 'discord',
+      options: {
+        redirectTo: window.location.origin
+      }
+    }).catch((err) => {
+      console.error("Supabase sign in error:", err);
+    });
   }, []);
 
-  const handleLogout = useCallback(() => {
+  const handleLogout = useCallback(async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("Sign out error:", err);
+    }
     localStorage.removeItem('ares_discord_user');
     localStorage.removeItem('ares_admin_token');
     setDiscordUser(null);
