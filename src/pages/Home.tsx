@@ -9,6 +9,14 @@ interface HomeProps {
   searchQuery: string;
 }
 
+interface Announcement {
+  id: string;
+  message: string;
+  color: string;
+  is_active: boolean;
+  created_at: string;
+}
+
 // Icona ufficiale di Discord
 const DiscordIcon: React.FC<React.ImgHTMLAttributes<HTMLImageElement>> = ({ className, style, ...props }) => (
   <img
@@ -33,6 +41,7 @@ const KofiIcon: React.FC<React.ImgHTMLAttributes<HTMLImageElement>> = ({ classNa
 
 const Home: React.FC<HomeProps> = ({ searchQuery }) => {
   const [games, setGames] = useState<Game[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('All');
   const { t, lang } = useLanguage();
@@ -54,6 +63,7 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
     return genreMap[genre] || genre;
   }, []);
 
+  // Recupero dei Giochi
   useEffect(() => {
     const fetchGames = async () => {
       setLoading(true);
@@ -78,7 +88,6 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
             ((userLang as string) === 'es' && (dbGame as any).description_es) ? (dbGame as any).description_es : 
             dbGame.description;
 
-          // Se non c'è una data nel database, il valore di fallback diventa automaticamente "TBA"
           const formattedReleaseDate = dbGame.release_date
             ? new Date(dbGame.release_date).toLocaleDateString(userLang === 'it' ? 'it-IT' : 'en-US', {
                 year: 'numeric',
@@ -118,6 +127,24 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
     fetchGames();
   }, [lang]);
 
+  // Recupero degli Annunci Attivi
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      const { data, error } = await supabase
+        .from('announcements')
+        .select('*')
+        .eq('is_active', true)
+        .order('id', { ascending: false });
+
+      if (error) {
+        console.error("Errore nel recupero degli annunci:", error);
+      } else if (data) {
+        setAnnouncements(data);
+      }
+    };
+    fetchAnnouncements();
+  }, []);
+
   // Ottimizzazione con useMemo per evitare ricalcoli dei filtri
   const archivedGames = useMemo(() => 
     games.filter(game => !game.isUpcoming && game.title.toLowerCase().includes(searchQuery.toLowerCase())),
@@ -153,6 +180,31 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Sezione Avvisi / Annunci Attivi */}
+      {announcements.length > 0 && (
+        <div className="space-y-4 mb-8">
+          {announcements.map(ann => {
+            // Mappiamo i colori salvati nell'admin panel con le relative classi CSS di ARES
+            const colorPreset = 
+              ann.color === 'red' ? { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400' } :
+              ann.color === 'amber' ? { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400' } :
+              ann.color === 'azure' ? { bg: 'bg-brand-azure/10', border: 'border-brand-azure/30', text: 'text-brand-azure' } :
+              ann.color === 'emerald' ? { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-400' } :
+              { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400' };
+
+            return (
+              <div 
+                key={ann.id} 
+                className={`p-4 rounded-2xl border ${colorPreset.bg} ${colorPreset.border} ${colorPreset.text} text-sm font-bold text-center shadow-md`}
+              >
+                {ann.message}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Titolo e Filtro Generi */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-black text-white uppercase italic tracking-tight mb-2 flex items-center gap-2">
@@ -211,7 +263,6 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 bg-[#5865F2] hover:bg-[#4752C4] text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-[#5865F2]/20 hover:shadow-[#5865F2]/30 transform hover:-translate-y-0.5 active:translate-y-0 text-center"
             >
-              {/* Filtro drop-shadow applicato ai contorni trasparenti del PNG */}
               <DiscordIcon 
                 className="w-4 h-4" 
                 style={{ filter: 'drop-shadow(1px 0px 0px black) drop-shadow(-1px 0px 0px black) drop-shadow(0px 1px 0px black) drop-shadow(0px -1px 0px black)' }} 
