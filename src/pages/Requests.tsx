@@ -5,7 +5,7 @@ import {
   Send, 
   HelpCircle, 
   Loader2, 
-  Gamepad2, 
+  ArchiveRestore, // Sostituito Gamepad2 con ArchiveRestore
   Info, 
   CheckCircle, 
   AlertTriangle, 
@@ -282,7 +282,7 @@ const Requests: React.FC = () => {
       {/* Page Header */}
       <div className="mb-12 text-center md:text-left">
         <h1 className="text-4xl font-black text-white uppercase italic tracking-tight mb-3 flex items-center justify-center md:justify-start gap-3">
-          <Gamepad2 className="w-10 h-10 text-brand-azure" />
+          <ArchiveRestore className="w-10 h-10 text-brand-azure" /> {/* Sostituito Gamepad2 con ArchiveRestore */}
           {t('requests.title')}
         </h1>
         <p className="text-gray-400 max-w-2xl text-lg">

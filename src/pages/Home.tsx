@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { GameCard } from '../components/GameCard';
 import { supabase } from '../supabase'; 
 import { Game } from '../types/game';
-import { Filter, ChevronDown, Loader2, Sparkles, FolderArchive, ChevronRight } from 'lucide-react';
+import { Filter, ChevronDown, Loader2, CalendarClock, Database, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
 
 interface HomeProps {
@@ -215,7 +215,7 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-black text-white uppercase italic tracking-tight mb-2 flex items-center gap-2">
-            <FolderArchive className="w-8 h-8 text-brand-azure" />
+            <Database className="w-8 h-8 text-brand-azure" /> {/* Sostituito FolderArchive con Database */}
             {t('home.title')}
           </h1>
           <p className="text-gray-400">{t('home.subtitle')}</p>
@@ -341,7 +341,7 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
         <div className="mt-20 pt-12 border-t border-brand-border">
           <div className="mb-8">
             <h2 className="text-3xl font-black text-white uppercase italic tracking-tight mb-2 flex items-center gap-2">
-              <Sparkles className="w-8 h-8 text-brand-azure animate-pulse" />
+              <CalendarClock className="w-8 h-8 text-brand-azure animate-pulse" /> {/* Sostituito Sparkles con CalendarClock */}
               {t('home.upcomingTitle')}
             </h2>
             <p className="text-gray-400">{t('home.upcomingSubtitle')}</p>
