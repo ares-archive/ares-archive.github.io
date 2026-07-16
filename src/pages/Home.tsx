@@ -11,7 +11,9 @@ interface HomeProps {
 
 interface Announcement {
   id: string;
-  message: string;
+  message: string;      // Inglese / Fallback generico
+  message_it: string | null; // Italiano
+  message_es: string | null; // Spagnolo
   color: string;
   is_active: boolean;
   created_at: string;
@@ -180,11 +182,10 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Sezione Avvisi / Annunci Attivi */}
+      {/* Sezione Avvisi / Annunci Attivi Localizzati */}
       {announcements.length > 0 && (
         <div className="space-y-4 mb-8">
           {announcements.map(ann => {
-            // Mappiamo i colori salvati nell'admin panel con le relative classi CSS di ARES
             const colorPreset = 
               ann.color === 'red' ? { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400' } :
               ann.color === 'amber' ? { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400' } :
@@ -192,12 +193,18 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
               ann.color === 'emerald' ? { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-400' } :
               { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400' };
 
+            // DETERMINA QUALE TRADUZIONE DELL'ANNUNCIO MOSTRARE
+            const localizedMessage = 
+              (lang === 'it' && ann.message_it) ? ann.message_it :
+              (lang === 'es' && ann.message_es) ? ann.message_es :
+              ann.message; // Fallback predefinito (inglese)
+
             return (
               <div 
                 key={ann.id} 
                 className={`p-4 rounded-2xl border ${colorPreset.bg} ${colorPreset.border} ${colorPreset.text} text-sm font-bold text-center shadow-md`}
               >
-                {ann.message}
+                {localizedMessage}
               </div>
             );
           })}

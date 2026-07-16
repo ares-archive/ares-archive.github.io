@@ -62,14 +62,16 @@ const PRESET_COLORS = [
 
 interface Announcement {
   id: string;
-  message: string;
+  message: string;      // Inglese
+  message_it: string | null; // Italiano
+  message_es: string | null; // Spagnolo
   color: string;
   is_active: boolean;
   created_at: string;
 }
 
 interface GameRequest {
-  id: number; // Corretto tipo da string a number per coincidere con il bigint di Postgres
+  id: number; 
   steam_appid: number;
   title: string;
   notes: string | null;
@@ -95,6 +97,8 @@ const AdminDashboard = () => {
   // Stati della gestione ANNUNCI
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [announcementMsg, setAnnouncementMsg] = useState('');
+  const [announcementMsgIt, setAnnouncementMsgIt] = useState('');
+  const [announcementMsgEs, setAnnouncementMsgEs] = useState('');
   const [announcementColor, setAnnouncementColor] = useState('red');
   const [editingAnnId, setEditingAnnId] = useState<string | null>(null);
 
@@ -492,6 +496,8 @@ const AdminDashboard = () => {
 
     const payload = {
       message: announcementMsg.trim(),
+      message_it: announcementMsgIt.trim() || null,
+      message_es: announcementMsgEs.trim() || null,
       color: announcementColor,
       is_active: true
     };
@@ -508,6 +514,8 @@ const AdminDashboard = () => {
         alert("Annuncio aggiornato!");
         setEditingAnnId(null);
         setAnnouncementMsg('');
+        setAnnouncementMsgIt('');
+        setAnnouncementMsgEs('');
         fetchAnnouncements();
       }
     } else {
@@ -520,6 +528,8 @@ const AdminDashboard = () => {
       } else {
         alert("Nuovo annuncio aggiunto!");
         setAnnouncementMsg('');
+        setAnnouncementMsgIt('');
+        setAnnouncementMsgEs('');
         fetchAnnouncements();
       }
     }
@@ -554,6 +564,8 @@ const AdminDashboard = () => {
       if (editingAnnId === id) {
         setEditingAnnId(null);
         setAnnouncementMsg('');
+        setAnnouncementMsgIt('');
+        setAnnouncementMsgEs('');
       }
     }
   };
@@ -1044,16 +1056,43 @@ const AdminDashboard = () => {
               </h3>
               
               <form onSubmit={handleSaveAnnouncement} className="space-y-4">
+                {/* Traduzione Inglese (Fallback) */}
                 <div>
                   <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest pl-1">
-                    Announcement Message
+                    Announcement Message (English / Default Fallback)
                   </label>
                   <textarea
-                    placeholder="Scrivi qui l'avviso per il sito..."
-                    className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm h-32 focus:outline-none focus:border-brand-azure mt-1"
+                    placeholder="Type the English or default message here..."
+                    className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm h-24 focus:outline-none focus:border-brand-azure mt-1 resize-none"
                     value={announcementMsg}
                     onChange={e => setAnnouncementMsg(e.target.value)}
                     required
+                  />
+                </div>
+
+                {/* Traduzione Italiano (Opzionale) */}
+                <div>
+                  <label className="text-[10px] font-black text-brand-azure uppercase tracking-widest pl-1">
+                    Announcement Message (Italiano - Opzionale)
+                  </label>
+                  <textarea
+                    placeholder="Scrivi qui il messaggio in italiano..."
+                    className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm h-24 focus:outline-none focus:border-brand-azure mt-1 resize-none"
+                    value={announcementMsgIt}
+                    onChange={e => setAnnouncementMsgIt(e.target.value)}
+                  />
+                </div>
+
+                {/* Traduzione Spagnolo (Opzionale) */}
+                <div>
+                  <label className="text-[10px] font-black text-emerald-500 uppercase tracking-widest pl-1">
+                    Announcement Message (Español - Opzionale)
+                  </label>
+                  <textarea
+                    placeholder="Escribe el mensaje en español aquí..."
+                    className="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-white text-sm h-24 focus:outline-none focus:border-brand-azure mt-1 resize-none"
+                    value={announcementMsgEs}
+                    onChange={e => setAnnouncementMsgEs(e.target.value)}
                   />
                 </div>
 
@@ -1091,6 +1130,8 @@ const AdminDashboard = () => {
                     onClick={() => {
                       setEditingAnnId(null);
                       setAnnouncementMsg('');
+                      setAnnouncementMsgIt('');
+                      setAnnouncementMsgEs('');
                     }}
                     className="w-full text-center text-xs font-black text-gray-500 hover:text-white uppercase transition-colors"
                   >
@@ -1118,10 +1159,28 @@ const AdminDashboard = () => {
                       className={`p-6 rounded-2xl border transition-all ${design.bgClass} ${design.borderClass} flex flex-col md:flex-row justify-between items-start md:items-center gap-4`}
                     >
                       <div className="space-y-2 flex-1">
-                        <p className={`text-sm font-bold leading-relaxed text-white`}>
-                          {ann.message}
-                        </p>
-                        <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-gray-500">
+                        <div className="space-y-2.5">
+                          {/* Testo Inglese */}
+                          <p className="text-sm font-bold leading-relaxed text-white">
+                            <span className="text-[9px] bg-brand-dark border border-brand-border px-1.5 py-0.5 rounded text-gray-500 mr-2 uppercase font-mono">en</span>
+                            {ann.message}
+                          </p>
+                          {/* Testo Italiano se presente */}
+                          {ann.message_it && (
+                            <p className="text-sm font-semibold leading-relaxed text-gray-300">
+                              <span className="text-[9px] bg-brand-dark border border-brand-border px-1.5 py-0.5 rounded text-brand-azure mr-2 uppercase font-mono">it</span>
+                              {ann.message_it}
+                            </p>
+                          )}
+                          {/* Testo Spagnolo se presente */}
+                          {ann.message_es && (
+                            <p className="text-sm font-semibold leading-relaxed text-gray-300">
+                              <span className="text-[9px] bg-brand-dark border border-brand-border px-1.5 py-0.5 rounded text-emerald-400 mr-2 uppercase font-mono">es</span>
+                              {ann.message_es}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-gray-500 pt-1">
                           <span>Color: <strong className={design.textClass}>{ann.color}</strong></span>
                           <span>•</span>
                           <span>Published: {new Date(ann.created_at).toLocaleDateString('it-IT')}</span>
@@ -1145,6 +1204,8 @@ const AdminDashboard = () => {
                           onClick={() => {
                             setEditingAnnId(ann.id);
                             setAnnouncementMsg(ann.message);
+                            setAnnouncementMsgIt(ann.message_it || '');
+                            setAnnouncementMsgEs(ann.message_es || '');
                             setAnnouncementColor(ann.color);
                           }}
                           className="p-2 text-brand-azure hover:bg-brand-azure/10 rounded-lg transition-colors"
