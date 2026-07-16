@@ -69,7 +69,7 @@ interface Announcement {
 }
 
 interface GameRequest {
-  id: string;
+  id: number; // Corretto tipo da string a number per coincidere con il bigint di Postgres
   steam_appid: number;
   title: string;
   notes: string | null;
@@ -573,20 +573,20 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleUpdateRequestStatus = async (id: string, newStatus: string) => {
+  const handleUpdateRequestStatus = async (id: number, newStatus: string) => {
     const { error } = await supabase
       .from('game_requests')
       .update({ status: newStatus })
       .eq('id', id);
 
     if (error) {
-      alert("Errore durante l'aggiornamento della richiesta");
+      alert("Errore durante l'aggiornamento della richiesta: " + error.message);
     } else {
       fetchRequests();
     }
   };
 
-  const handleDeleteRequest = async (id: string) => {
+  const handleDeleteRequest = async (id: number) => {
     const conferma = window.confirm("Sei sicuro di voler eliminare questa richiesta?");
     if (!conferma) return;
 
@@ -596,7 +596,7 @@ const AdminDashboard = () => {
       .eq('id', id);
 
     if (error) {
-      alert("Errore durante l'eliminazione");
+      alert("Errore durante l'eliminazione: " + error.message);
     } else {
       fetchRequests();
     }
