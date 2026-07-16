@@ -33,7 +33,7 @@ function App() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isDark, setIsDark] = useState(() => localStorage.getItem('ares_theme') !== 'light');
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { bgTheme } = useBackgroundTheme();
 
   // User-Agent detection to block bots
@@ -357,8 +357,11 @@ function App() {
                 </a>
               </div>
 
+              {/* Riferimento temporale aggiornato al 2026 con localizzazione dinamica */}
               <p className="text-gray-700 text-[10px] font-bold uppercase tracking-widest">
-                {t('footer.est')}
+                {lang === 'it' ? 'DAL 2026 • PRESERVAZIONE DIGITALE' : 
+                 lang === 'es' ? 'DESDE 2026 • PRESERVACIÓN DIGITAL' : 
+                 'EST. 2026 • DIGITAL PRESERVATION'}
               </p>
             </div>
           </div>
