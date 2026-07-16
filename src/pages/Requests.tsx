@@ -37,14 +37,31 @@ const Requests: React.FC = () => {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [cooldownTimeLeft, setCooldownTimeLeft] = useState(0);
+  const [requestCount, setRequestCount] = useState(0);
 
-  // Monitora in tempo reale lo stato dell'anti-flood cooldown (72 ore)
+  // Monitora in tempo reale lo stato dell'anti-flood cooldown (24 ore, max 2 richieste)
   useEffect(() => {
-    const checkCooldown = () => {
+    const checkCooldown = async () => {
       const lastRequest = localStorage.getItem('ares_last_request_time');
+      
+      // Recupera utente corrente
+      const userStr = localStorage.getItem('ares_discord_user');
+      const userId = userStr ? JSON.parse(userStr)?.id : null;
+
+      if (userId) {
+        // Controlla quante richieste ha fatto nelle ultime 24 ore
+        const { data: requestsCount } = await supabase
+          .from('game_requests')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .gte('created_at', new Date(Date.now() - 86400000).toISOString());
+
+        setRequestCount(requestsCount?.count || 0);
+      }
+
       if (lastRequest) {
         const elapsed = Date.now() - parseInt(lastRequest, 10);
-        const cooldownDuration = 259200000; // 72 ore in millisecondi
+        const cooldownDuration = 86400000; // 24 ore in millisecondi
         if (elapsed < cooldownDuration) {
           setCooldownTimeLeft(Math.ceil((cooldownDuration - elapsed) / 1000));
         } else {
@@ -76,17 +93,53 @@ const Requests: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Ulteriore controllo di sicurezza anti-flood sul client (72 ore)
+    // Otteniamo l'utente corrente
+    const userStr = localStorage.getItem('ares_discord_user');
+    const currentUser = userStr ? JSON.parse(userStr) : null;
+
+    if (!currentUser?.id) {
+      setSubmitStatus('error');
+      setErrorMessage('You must be logged in to submit requests');
+      return;
+    }
+
+    // ULTERIORE CONTROLLO SERVER-SIDE PER RATE LIMIT (24 ore, max 2 richieste)
+    try {
+      const { data: canRequest, error: rpcError } = await supabase.rpc('check_request_rate_limit', {
+        p_user_id: currentUser.id
+      });
+
+      if (rpcError) {
+        console.error('RPC error:', rpcError);
+      }
+
+      if (canRequest === false) {
+        setSubmitStatus('error');
+        setErrorMessage('You have reached the maximum of 2 requests per 24 hours. Please wait before submitting another.');
+        return;
+      }
+    } catch (err) {
+      console.error('Rate limit check failed:', err);
+    }
+
+    // Fallback: controllo client-side (24 ore)
     const lastRequest = localStorage.getItem('ares_last_request_time');
     if (lastRequest) {
       const elapsed = Date.now() - parseInt(lastRequest, 10);
-      const cooldownDuration = 259200000; // 72 ore in millisecondi
+      const cooldownDuration = 86400000; // 24 ore in millisecondi
       if (elapsed < cooldownDuration) {
         setSubmitStatus('error');
         const hoursLeft = Math.ceil((cooldownDuration - elapsed) / (1000 * 60 * 60));
         setErrorMessage(`You must wait ${hoursLeft} hours before submitting another request`);
         return;
       }
+    }
+
+    // Controlla numero massimo di richieste (max 2 nelle ultime 24h)
+    if (requestCount >= 2) {
+      setSubmitStatus('error');
+      setErrorMessage('You have reached the maximum of 2 requests per 24 hours.');
+      return;
     }
 
     if (!appId || !title) {
@@ -103,6 +156,7 @@ const Requests: React.FC = () => {
         .from('game_requests')
         .insert([
           {
+            user_id: currentUser.id,
             steam_appid: parseInt(appId, 10),
             title: title,
             notes: notes || null,
@@ -126,6 +180,9 @@ const Requests: React.FC = () => {
       setTitle('');
       setNotes('');
       setDiscordTag('');
+      
+      // Aggiorna il contatore
+      setRequestCount(prev => prev + 1);
     } catch (err: any) {
       console.error('Error submitting request:', err);
       setSubmitStatus('error');
@@ -249,6 +306,22 @@ const Requests: React.FC = () => {
                   <p className="text-xs text-gray-400 mt-1">
                     {t('requests.rateLimitText', { seconds: cooldownTimeLeft })}
                   </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Requests remaining today: <span className="text-white font-bold">{2 - requestCount}</span>/2
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Avviso Max Requests Raggiunto */}
+            {requestCount >= 2 && (
+              <div className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl animate-fade-in">
+                <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-bold text-sm text-white">Maximum Requests Reached</h4>
+                  <p className="text-xs text-gray-400 mt-1">
+                    You have used your maximum allowance of 2 requests in the last 24 hours.
+                  </p>
                 </div>
               </div>
             )}
@@ -256,7 +329,7 @@ const Requests: React.FC = () => {
             {/* Submission Button */}
             <button
               type="submit"
-              disabled={isSubmitting || cooldownTimeLeft > 0}
+              disabled={isSubmitting || cooldownTimeLeft > 0 || requestCount >= 2}
               className="w-full flex items-center justify-center gap-2 py-3.5 bg-brand-azure hover:bg-brand-azure/80 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all disabled:opacity-50"
             >
               {isSubmitting ? (
@@ -312,13 +385,17 @@ const Requests: React.FC = () => {
                     <pre className="text-[10px] bg-brand-card p-2 rounded text-gray-300 font-mono overflow-x-auto select-all">
 {`CREATE TABLE game_requests (
   id bigint generated by default as identity primary key,
+  user_id uuid references auth.users(id),
   steam_appid bigint not null,
   title text not null,
   notes text,
   discord_tag text,
   status text default 'pending',
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
-);`}
+);
+
+CREATE INDEX idx_game_requests_user_id ON game_requests(user_id);
+CREATE INDEX idx_game_requests_status ON game_requests(status);`}
                     </pre>
                   </div>
                 )}
