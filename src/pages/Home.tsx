@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { GameCard } from '../components/GameCard';
-import RandomGameWidget from '../components/RandomGameWidget';
 import { supabase } from '../supabase'; 
 import { Game } from '../types/game';
 import { Filter, ChevronDown, Loader2, CalendarClock, Database, ChevronRight } from 'lucide-react';
@@ -197,7 +196,6 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
             // DETERMINA QUALE TRADUZIONE DELL'ANNUNCIO MOSTRARE
             const localizedMessage = 
               (lang === 'it' && ann.message_it) ? ann.message_it :
-              (lang === 'es' && ann.message_es) ? ann.message_es :
               ann.message; // Fallback predefinito (inglese)
 
             return (
@@ -279,9 +277,6 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
             </a>
           </div>
         </div>
-
-        {/* Random Game Widget */}
-        <RandomGameWidget games={games} />
 
         {/* Ko-fi Support Card */}
         <div className="relative overflow-hidden bg-gradient-to-r from-[#FF5E5B]/10 via-[#FF5E5B]/5 to-transparent border border-brand-border rounded-2xl p-6 flex flex-col justify-between gap-6">
