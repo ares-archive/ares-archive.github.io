@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { GameCard } from '../components/GameCard';
+import RandomGameWidget from '../components/RandomGameWidget';
 import { supabase } from '../supabase'; 
 import { Game } from '../types/game';
 import { Filter, ChevronDown, Loader2, CalendarClock, Database, ChevronRight } from 'lucide-react';
@@ -244,7 +245,7 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
       </div>
 
       {/* Promo & Support Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
         {/* Discord Card */}
         <div className="relative overflow-hidden bg-gradient-to-r from-[#5865F2]/10 via-[#5865F2]/5 to-transparent border border-brand-border rounded-2xl p-6 flex flex-col justify-between gap-6">
           <div className="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-[#5865F2] rounded-full blur-[60px] opacity-20 pointer-events-none" />
@@ -278,6 +279,9 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
             </a>
           </div>
         </div>
+
+        {/* Random Game Widget */}
+        <RandomGameWidget games={games} />
 
         {/* Ko-fi Support Card */}
         <div className="relative overflow-hidden bg-gradient-to-r from-[#FF5E5B]/10 via-[#FF5E5B]/5 to-transparent border border-brand-border rounded-2xl p-6 flex flex-col justify-between gap-6">
