@@ -1,251 +1,193 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { 
   Scale, 
   ShieldAlert, 
-  Mail, 
   FileText, 
-  Copyright, 
-  ArrowLeft, 
-  Info, 
+  Mail, 
   ShieldCheck, 
+  AlertTriangle, 
   Copy, 
-  Check, 
-  Gavel,
-  ExternalLink
+  Check 
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useLanguage } from '../i18n/LanguageContext';
 
-const Legal: React.FC = () => {
-  const { t } = useLanguage();
+export default function Legal() {
   const [copied, setCopied] = useState(false);
-  const contactEmail = 'ares.digital.preservation@gmail.com';
+  const email = "ares.digital.preservation@gmail.com";
 
-  const s3items = (t('legal.s3items') as unknown as { strong: string; text: string }[]) || [];
-
-  const handleCopyEmail = () => {
-    navigator.clipboard.writeText(contactEmail);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(email);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="relative min-h-screen py-12 md:py-20 px-4 sm:px-6 lg:px-8 text-gray-200 overflow-hidden">
-      {/* Elementi Decorativi di Sfondo */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-brand-azure/5 blur-[120px] pointer-events-none rounded-full" />
-      
-      <div className="max-w-5xl mx-auto relative z-10">
+    <div className="min-h-screen bg-[#07090e] text-slate-300 py-12 px-4 sm:px-6 lg:px-8 font-sans">
+      <div className="max-w-4xl mx-auto space-y-8">
         
-        {/* Top Navigation & Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: -15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="mb-12"
-        >
-          <Link 
-            to="/" 
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-card/60 border border-brand-border text-brand-azure text-xs font-mono uppercase tracking-wider hover:border-brand-azure/50 hover:bg-brand-azure/10 transition-all duration-300 group mb-8"
-          >
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            <span>{t('legal.back')}</span>
-          </Link>
+        {/* Header */}
+        <div className="border-b border-slate-800 pb-6">
+          <div className="flex items-center gap-2 text-sky-400 text-xs font-semibold tracking-wider uppercase mb-2">
+            <Scale className="w-4 h-4" />
+            <span>Legal &amp; Compliance</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            NORMATIVA LEGALE E DMCA
+          </h1>
+          <div className="mt-2 flex flex-wrap justify-between items-center text-xs text-slate-500 font-mono gap-2">
+            <span>ARCHIVIO DI PRESERVAZIONE DIGITALE ARES • ULTIMO AGGIORNAMENTO: GIUGNO 2026</span>
+            <span className="text-sky-500/80">REF: ARES-LEGAL-SEC-0x99A3B</span>
+          </div>
+        </div>
 
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-brand-border/60">
-            <div>
-              <div className="inline-flex items-center gap-2 text-brand-azure text-xs font-mono font-bold uppercase tracking-widest mb-3 bg-brand-azure/10 px-3 py-1 rounded-md border border-brand-azure/20">
-                <Gavel className="w-3.5 h-3.5" />
-                <span>Legal & Compliance</span>
-              </div>
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white uppercase italic tracking-tight flex items-center gap-4">
-                {t('legal.title')}
-              </h1>
+        {/* 1. Dichiarazione */}
+        <section className="bg-[#0c0f17] border border-slate-800/80 rounded-xl p-6 relative overflow-hidden">
+          <div className="flex items-start gap-4">
+            <div className="p-2.5 bg-slate-900 border border-slate-800 rounded-lg text-sky-400 shrink-0 mt-0.5">
+              <Scale className="w-5 h-5" />
             </div>
-            
-            <div className="text-left md:text-right shrink-0">
-              <span className="text-[11px] font-mono text-gray-500 uppercase tracking-widest block">
-                {t('legal.updated')}
-              </span>
-              <span className="text-xs font-mono text-brand-azure/80 font-bold">
-                REF: ARES-LEGAL-SEC-0x99A8B
-              </span>
+            <div className="space-y-3">
+              <h2 className="text-lg font-bold text-white tracking-wide">
+                1. DICHIARAZIONE DI NON COMMERCIALITÀ E PRESERVAZIONE
+              </h2>
+              <p className="text-sm leading-relaxed text-slate-400">
+                ARES Archive è un progetto hobbistico personale, non commerciale e senza scopo di lucro, dedicato esclusivamente alla preservazione digitale e all'archiviazione storica di software, arte interattiva e storia digitale.
+              </p>
+              <p className="text-sm leading-relaxed text-slate-400">
+                In linea con gli standard internazionali di preservazione e le iniziative delle biblioteche digitali, il nostro obiettivo primario è prevenire la perdita permanente di media digitali, artefatti software moderni e rilasci esclusivamente digitali contemporanei a rischio di diventare inaccessibili nel tempo. Tutti i materiali ospitati in questo archivio sono destinati esclusivamente a scopi di archiviazione, storici ed educativi. Non monetizziamo, vendiamo, né traiamo alcun beneficio economico dai file catalogati qui.
+              </p>
             </div>
           </div>
-        </motion.div>
+        </section>
 
-        {/* Layout Principale */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="space-y-8"
-        >
-
-          {/* 1. Dichiarazione di Non Commercialità */}
-          <section className="relative overflow-hidden rounded-3xl bg-brand-card/40 border border-brand-border p-6 sm:p-8 backdrop-blur-md transition-all duration-300 hover:border-brand-azure/40">
-            <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none text-white">
-              <Info className="w-32 h-32" />
+        {/* 2. Politica Copyright */}
+        <section className="bg-[#0c0f17] border border-slate-800/80 rounded-xl p-6">
+          <div className="flex items-start gap-4">
+            <div className="p-2.5 bg-slate-900 border border-slate-800 rounded-lg text-sky-400 shrink-0 mt-0.5">
+              <ShieldAlert className="w-5 h-5" />
             </div>
-            <div className="relative z-10 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-brand-azure/10 border border-brand-azure/20 text-brand-azure">
-                  <Info className="w-6 h-6" />
-                </div>
-                <h2 className="text-lg sm:text-xl font-black text-white uppercase tracking-wider">
-                  {t('legal.s1Title')}
-                </h2>
-              </div>
-              <div className="space-y-3 text-sm sm:text-base text-gray-300 leading-relaxed pt-2 border-t border-brand-border/40">
-                <p>{t('legal.s1p1')}</p>
-                <p>{t('legal.s1p2')}</p>
-              </div>
-            </div>
-          </section>
-
-          {/* 2. Politica Copyright DMCA */}
-          <section className="rounded-3xl bg-brand-card/40 border border-brand-border p-6 sm:p-8 backdrop-blur-md transition-all duration-300 hover:border-brand-azure/40 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-brand-azure/10 border border-brand-azure/20 text-brand-azure">
-                <Copyright className="w-6 h-6" />
-              </div>
-              <h2 className="text-lg sm:text-xl font-black text-white uppercase tracking-wider">
-                {t('legal.s2Title')}
+            <div className="space-y-3">
+              <h2 className="text-lg font-bold text-white tracking-wide">
+                2. POLITICA SUL COPYRIGHT DMCA E RIMOZIONE CONTENUTI
               </h2>
-            </div>
-            <div className="space-y-3 text-sm sm:text-base text-gray-300 leading-relaxed pt-2 border-t border-brand-border/40">
-              <p>
-                {t('legal.s2p1Pre')} <strong className="text-white font-semibold">{t('legal.s2p1Strong')}</strong> {t('legal.s2p1Post')}
+              <p className="text-sm leading-relaxed text-slate-400">
+                ARES Archive rispetta i diritti di proprietà intellettuale di sviluppatori, publisher e creatori di software. Ci atteniamo alle disposizioni del <strong className="text-slate-200">Digital Millennium Copyright Act (DMCA)</strong> (17 U.S.C. § 512).
               </p>
-              <p>{t('legal.s2p2')}</p>
+              <p className="text-sm leading-relaxed text-slate-400">
+                Se sei il titolare di un copyright, o sei autorizzato ad agire per suo conto, e ritieni che un materiale catalogato sul nostro sito violi il tuo copyright, puoi inviare una richiesta formale scritta di rimozione al nostro agente designato. Una volta ricevuta una notifica valida e pienamente conforme, agiremo tempestivamente per rimuovere o disabilitare l'accesso al materiale contestato.
+              </p>
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* 3. Requisiti per Notifica Conforme */}
-          <section className="rounded-3xl bg-brand-card/40 border border-brand-border p-6 sm:p-8 backdrop-blur-md transition-all duration-300 hover:border-brand-azure/40 space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-brand-azure/10 border border-brand-azure/20 text-brand-azure">
-                <FileText className="w-6 h-6" />
-              </div>
-              <h2 className="text-lg sm:text-xl font-black text-white uppercase tracking-wider">
-                {t('legal.s3Title')}
+        {/* 3. Requisiti DMCA */}
+        <section className="bg-[#0c0f17] border border-slate-800/80 rounded-xl p-6 space-y-4">
+          <div className="flex items-start gap-4">
+            <div className="p-2.5 bg-slate-900 border border-slate-800 rounded-lg text-sky-400 shrink-0 mt-0.5">
+              <FileText className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white tracking-wide">
+                3. REQUISITI PER UNA NOTIFICA DMCA CONFORME
               </h2>
+              <p className="text-sm text-slate-400 mt-1">
+                Per garantire l'elaborazione immediata della tua richiesta, la notifica scritta deve includere tutti i seguenti elementi, come richiesto dal 17 U.S.C. § 512(c)(3):
+              </p>
             </div>
-            
-            <p className="text-sm sm:text-base text-gray-300 border-t border-brand-border/40 pt-4">
-              {t('legal.s3p1')}
-            </p>
+          </div>
 
-            <div className="grid grid-cols-1 gap-3">
-              {Array.isArray(s3items) && s3items.map((item, i) => (
-                <div 
-                  key={i}
-                  className="flex items-start gap-4 p-4 rounded-2xl bg-brand-dark/50 border border-brand-border/60 hover:border-brand-azure/30 transition-colors"
-                >
-                  <span className="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg bg-brand-azure/10 border border-brand-azure/30 text-brand-azure font-mono font-bold text-xs">
-                    0{i + 1}
-                  </span>
-                  <div className="text-xs sm:text-sm text-gray-300 leading-relaxed">
-                    <strong className="text-white font-semibold block mb-0.5">{item.strong}</strong>
-                    <span>{item.text}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* 4. Contatti Agente Designato (Highlight Card) */}
-          <section className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-brand-azure/15 to-brand-card/60 border border-brand-azure/40 p-6 sm:p-8 backdrop-blur-md shadow-2xl space-y-6">
-            <div className="flex items-center justify-between gap-4 flex-wrap">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-brand-azure text-brand-dark font-bold shadow-lg shadow-brand-azure/20">
-                  <Mail className="w-6 h-6" />
-                </div>
-                <h2 className="text-lg sm:text-xl font-black text-white uppercase tracking-wider">
-                  {t('legal.s4Title')}
-                </h2>
-              </div>
-              <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-brand-azure/20 border border-brand-azure/30 text-brand-azure font-semibold uppercase">
-                SLA: 24 - 48 Ore
-              </span>
-            </div>
-
-            <p className="text-sm sm:text-base text-gray-300 leading-relaxed">
-              {t('legal.s4p1Pre')} <strong className="text-white">{t('legal.s4p1Strong')}</strong>{t('legal.s4p1Post')}
-            </p>
-
-            {/* Email Copiabile Box */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 rounded-2xl bg-brand-dark/90 border border-brand-azure/30">
-              <div className="space-y-1 overflow-hidden">
-                <span className="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest block">
-                  {t('legal.emailLabel')}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-0 md:pl-12 pt-2">
+            {[
+              { id: "01", title: "Firma Autorizzata:", desc: "Una firma fisica o elettronica di una persona autorizzata ad agire per conto del titolare di un diritto esclusivo presumibilmente violato." },
+              { id: "02", title: "Identificazione dell'Opera:", desc: "Identificazione dell'opera protetta da copyright che si presume sia stata violata, o, in caso di più opere coperte da un'unica notifica, un elenco rappresentativo di tali opere." },
+              { id: "03", title: "Identificazione del Materiale in Violazione:", desc: "Identificazione del materiale ritenuto in violazione o oggetto di attività illecita, incluso l'URL esatto sul nostro sito dove si trova il materiale." },
+              { id: "04", title: "Informazioni di Contatto:", desc: "Informazioni ragionevolmente sufficienti a permetterci di contattarti, incluso un indirizzo, un numero di telefono e, se disponibile, un indirizzo e-mail attivo." },
+              { id: "05", title: "Dichiarazione di Buona Fede:", desc: "Una dichiarazione secondo cui ritieni in buona fede che l'uso del materiale contestato non sia autorizzato dal titolare del copyright, dal suo agente o dalla legge." },
+              { id: "06", title: "Dichiarazione di Accuratezza:", desc: "Una dichiarazione che le informazioni nella notifica sono accurate e, sotto pena di pergiuro, che sei autorizzato ad agire per conto del titolare di un diritto esclusivo presumibilmente violato." }
+            ].map((item) => (
+              <div key={item.id} className="bg-[#080a10] border border-slate-800/60 rounded-lg p-3.5 flex gap-3">
+                <span className="text-xs font-mono font-bold text-sky-500/80 bg-sky-950/40 border border-sky-800/30 rounded px-1.5 py-0.5 h-fit">
+                  {item.id}
                 </span>
-                <span className="text-brand-azure font-mono font-black text-sm sm:text-base break-all block">
-                  {contactEmail}
+                <div className="text-xs space-y-1">
+                  <span className="font-semibold text-slate-200 block">{item.title}</span>
+                  <p className="text-slate-400 leading-relaxed">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 4. Agente Designato */}
+        <section className="bg-sky-950/10 border border-sky-900/40 rounded-xl p-6 relative overflow-hidden">
+          <div className="flex items-start gap-4">
+            <div className="p-2.5 bg-sky-900/20 border border-sky-800/50 rounded-lg text-sky-400 shrink-0 mt-0.5">
+              <Mail className="w-5 h-5" />
+            </div>
+            <div className="space-y-4 w-full">
+              <div className="flex flex-wrap justify-between items-center gap-2">
+                <h2 className="text-lg font-bold text-white tracking-wide">
+                  4. INFORMAZIONI DI CONTATTO DELL'AGENTE DESIGNATO
+                </h2>
+                <span className="text-[10px] font-mono uppercase bg-sky-900/30 border border-sky-700/40 text-sky-400 px-2 py-0.5 rounded">
+                  SLA: 24 - 48 ORE
                 </span>
               </div>
               
-              <button
-                onClick={handleCopyEmail}
-                className="shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-brand-azure hover:bg-brand-azure/90 text-brand-dark font-bold text-xs uppercase tracking-wider transition-all duration-200 active:scale-95 shadow-md"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4 text-emerald-950" />
-                    <span>Copiato!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    <span>Copia Email</span>
-                  </>
-                )}
-              </button>
-            </div>
+              <p className="text-sm text-slate-400">
+                Invia tutte le notifiche DMCA conformi direttamente al nostro indirizzo e-mail designato. Esaminiamo ed elaboriamo tutte le richieste valide entro <strong className="text-slate-200">da 24 a 48 ore</strong>.
+              </p>
 
-            <p className="text-xs text-gray-400 italic">
-              {t('legal.adminNote')}
-            </p>
-          </section>
-
-          {/* 5. Procedura di Contronotifica */}
-          <section className="rounded-3xl bg-brand-card/40 border border-brand-border p-6 sm:p-8 backdrop-blur-md transition-all duration-300 hover:border-brand-azure/40 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-                <ShieldCheck className="w-6 h-6" />
+              <div className="bg-[#05070c] border border-slate-800 rounded-lg p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <span className="text-[10px] font-mono text-slate-500 uppercase block tracking-wider">Indirizzo Email</span>
+                  <span className="font-mono text-sm font-semibold text-sky-400">{email}</span>
+                </div>
+                <button
+                  onClick={handleCopy}
+                  className="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-4 py-2 rounded-md transition-all duration-150 shrink-0"
+                >
+                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  <span>{copied ? "COPIATO" : "COPIA EMAIL"}</span>
+                </button>
               </div>
-              <h2 className="text-lg sm:text-xl font-black text-white uppercase tracking-wider">
-                {t('legal.s5Title')}
-              </h2>
-            </div>
-            <div className="space-y-3 text-sm sm:text-base text-gray-300 leading-relaxed pt-2 border-t border-brand-border/40">
-              <p>{t('legal.s5p1')}</p>
-              <p>{t('legal.s5p2')}</p>
-            </div>
-          </section>
-
-          {/* Banner Finale Disclaimer Rapido */}
-          <div className="rounded-2xl bg-brand-card/20 border border-brand-border/60 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider">
-                  {t('legal.sidebarTitle')}
-                </h4>
-                <p className="text-xs text-gray-400 mt-1 max-w-2xl">
-                  {t('legal.sidebarText')}
-                </p>
-              </div>
-            </div>
-            <div className="text-[10px] font-mono text-gray-500 shrink-0 border-t md:border-t-0 md:border-l border-brand-border pt-2 md:pt-0 md:pl-4">
-              {t('legal.sidebarSignature')}
             </div>
           </div>
+        </section>
 
-        </motion.div>
+        {/* 5. Contronotifica */}
+        <section className="bg-[#0c0f17] border border-slate-800/80 rounded-xl p-6">
+          <div className="flex items-start gap-4">
+            <div className="p-2.5 bg-slate-900 border border-slate-800 rounded-lg text-sky-400 shrink-0 mt-0.5">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div className="space-y-3">
+              <h2 className="text-lg font-bold text-white tracking-wide">
+                5. PROCEDURA DI CONTRONOTIFICA
+              </h2>
+              <p className="text-sm leading-relaxed text-slate-400">
+                Se ritieni che il tuo materiale sia stato rimosso o disabilitato per errore o erronea identificazione, puoi inviare una contronotifica scritta al nostro agente designato.
+              </p>
+              <p className="text-sm leading-relaxed text-slate-400">
+                Ai sensi del DMCA, una contronotifica conforme deve includere la tua firma fisica/elettronica, l'identificazione del materiale rimosso, una dichiarazione sotto pena di pergiuro che ritieni la rimozione un errore e le tue informazioni di contatto. Una volta ricevuta, inoltreremo la contronotifica alla parte richiedente originale.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Avviso Legale Finale */}
+        <div className="bg-[#080a10] border border-slate-800/50 rounded-lg p-4 flex items-center justify-between gap-4 text-xs">
+          <div className="flex items-center gap-3 text-slate-400">
+            <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+            <span>
+              Questo documento è redatto per garantire la massima conformità formale internazionale con il sistema di rimozione DMCA ed è perfettamente riconoscibile dai legali e dai detentori di copyright in tutto il mondo.
+            </span>
+          </div>
+          <span className="font-mono text-[10px] text-slate-600 uppercase shrink-0 hidden sm:inline">
+            FIRMA: ARES ARCHIVE
+          </span>
+        </div>
+
       </div>
     </div>
   );
-};
-
-export default Legal;
+}
