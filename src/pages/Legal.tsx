@@ -33,10 +33,6 @@ export default function Legal() {
           <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
             NORMATIVA LEGALE E DMCA
           </h1>
-          <div className="mt-2 flex flex-wrap justify-between items-center text-xs text-slate-500 font-mono gap-2">
-            <span>ARCHIVIO DI PRESERVAZIONE DIGITALE ARES • ULTIMO AGGIORNAMENTO: GIUGNO 2026</span>
-            <span className="text-sky-500/80">REF: ARES-LEGAL-SEC-0x99A3B</span>
-          </div>
         </div>
 
         {/* 1. Dichiarazione */}
