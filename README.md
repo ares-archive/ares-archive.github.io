@@ -20,7 +20,7 @@
 
 ## Overview
 
-ARES Archive is the primary interface of the **ARES Digital Preservation Project** — a comprehensive initiative to catalogue, preserve, and make accessible the history of digital media. Built on[...]
+ARES Archive is the primary interface of the **ARES Digital Preservation Project** — a comprehensive initiative to catalogue, preserve, and make accessible the history of digital media.
 
 ---
 
