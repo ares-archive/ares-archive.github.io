@@ -145,6 +145,6 @@ This project is licensed under the GPL-2.0 license — see the [LICENSE](LICENSE
 
 <div align="center">
 
-[**ildenteproibito**](https://github.com/ildenteproibito) — IL DENTE PROIBITO, Web Developer by ARES & [**Luke10-glitch**](https://github.com/Luke10-glitch), Founder of ARES
+[**ildenteproibito**](https://github.com/ildenteproibito) — IL DENTE PROIBITO, Web Developer by ARES & [**Luke10-glitch**](https://github.com/Luke10-glitch), Founder of ARES & [**Eddyx12**](https://github.com/Eddyx12), Bot Developer
 
 </div>
