@@ -1,0 +1,175 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-brand-dark text-gray-200 antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+.theme-light {
+  color: #0f172a;
+}
+
+.theme-light.bg-brand-dark,
+.theme-light .bg-brand-dark {
+  background-color: #f7f8fb;
+}
+
+.theme-light .bg-brand-dark\/90 {
+  background-color: rgb(247 248 251 / 0.9);
+}
+
+.theme-light .bg-brand-card {
+  background-color: #ffffff;
+}
+
+.theme-light .bg-brand-border {
+  background-color: #e5e7eb;
+}
+
+.theme-light .border-brand-border {
+  border-color: #e5e7eb;
+}
+
+.theme-light .text-white,
+.theme-light .text-gray-200,
+.theme-light .text-gray-300 {
+  color: #0f172a;
+}
+
+.theme-light .text-gray-400,
+.theme-light .text-gray-500 {
+  color: #64748b;
+}
+
+.theme-light .text-gray-600 {
+  color: #475569;
+}
+
+.theme-light .text-gray-700 {
+  color: #64748b;
+}
+
+.theme-light input,
+.theme-light textarea {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+.theme-light .shadow-2xl,
+.theme-light .shadow-xl {
+  box-shadow: 0 18px 45px rgb(15 23 42 / 0.08);
+}
+
+.theme-light .bg-brand-azure.text-white,
+.theme-light .bg-brand-red.text-white,
+.theme-light .bg-\[\#5865F2\].text-white {
+  color: #ffffff;
+}
+
+.theme-light .theme-preserve-contrast .text-white,
+.theme-light .theme-preserve-contrast .text-gray-400 {
+  color: #ffffff;
+}
+
+.theme-light .theme-preserve-contrast .from-brand-dark {
+  --tw-gradient-from: #050608 var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(5 6 8 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-brand-dark;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-brand-border rounded-full hover:bg-gray-600 transition-colors;
+}
+
+/* ============================================================
+   BACKGROUND THEMES
+   Sfondi personalizzati e unici, selezionabili dal ThemeSelector
+   nell'header. Ogni tema aggiunge un layer decorativo fisso
+   dietro ai contenuti tramite ::before sul wrapper .ares-bg-theme.
+   Il layer non intercetta il mouse (pointer-events: none) ed è
+   sempre dietro al contenuto (z-index negativo).
+   ============================================================ */
+
+.ares-bg-theme {
+  position: relative;
+  isolation: isolate;
+}
+
+.ares-bg-theme::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+
+/* ARES Default: la griglia sottile originale, discreta */
+.ares-bg-theme[data-bg-theme='ares-default']::before {
+  background-image:
+    linear-gradient(rgba(0, 123, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 123, 255, 0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Azure Grid: griglia blu più marcata con vignette radiale */
+.ares-bg-theme[data-bg-theme='azure-grid']::before {
+  background-image:
+    radial-gradient(circle at 20% 15%, rgba(0, 123, 255, 0.16), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(0, 123, 255, 0.10), transparent 50%),
+    linear-gradient(rgba(0, 123, 255, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 123, 255, 0.09) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+}
+
+/* Crimson Protocol: bagliori rossi diagonali stile "alert" */
+.ares-bg-theme[data-bg-theme='crimson-protocol']::before {
+  background-image:
+    radial-gradient(circle at 10% 10%, rgba(220, 53, 69, 0.18), transparent 40%),
+    radial-gradient(circle at 90% 20%, rgba(220, 53, 69, 0.12), transparent 45%),
+    radial-gradient(circle at 50% 100%, rgba(220, 53, 69, 0.10), transparent 55%),
+    repeating-linear-gradient(135deg, rgba(220, 53, 69, 0.045) 0px, rgba(220, 53, 69, 0.045) 1px, transparent 1px, transparent 26px);
+}
+
+/* Emerald Terminal: effetto "matrix" con scanline verdi */
+.ares-bg-theme[data-bg-theme='emerald-terminal']::before {
+  background-image:
+    linear-gradient(rgba(40, 167, 69, 0.08) 1px, transparent 1px),
+    repeating-linear-gradient(0deg, rgba(40, 167, 69, 0.05) 0px, rgba(40, 167, 69, 0.05) 1px, transparent 1px, transparent 3px),
+    radial-gradient(circle at 50% 0%, rgba(40, 167, 69, 0.14), transparent 60%);
+  background-size: 100% 42px, 100% 100%, 100% 100%;
+}
+
+/* Nebula Violet: nebulosa morbida viola/blu */
+.ares-bg-theme[data-bg-theme='nebula']::before {
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(124, 58, 237, 0.22), transparent 45%),
+    radial-gradient(circle at 85% 30%, rgba(0, 123, 255, 0.16), transparent 50%),
+    radial-gradient(circle at 50% 90%, rgba(124, 58, 237, 0.14), transparent 55%);
+}
+
+/* Sunset Archive: gradiente caldo arancio/rosa in basso */
+.ares-bg-theme[data-bg-theme='sunset-archive']::before {
+  background-image:
+    radial-gradient(circle at 50% 120%, rgba(255, 120, 73, 0.22), transparent 55%),
+    radial-gradient(circle at 10% 0%, rgba(255, 94, 91, 0.10), transparent 45%),
+    radial-gradient(circle at 90% 10%, rgba(0, 123, 255, 0.08), transparent 45%);
+}
+
+/* In tema chiaro riduciamo l'opacità dei layer per mantenere leggibilità */
+.theme-light.ares-bg-theme::before {
+  opacity: 0.55;
+}

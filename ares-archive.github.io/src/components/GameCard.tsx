@@ -1,0 +1,138 @@
+import React, { useState, useEffect, useCallback, memo } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Heart } from 'lucide-react';
+import { Game } from '../types/game';
+import { supabase } from '../supabase';
+
+interface GameCardProps {
+  game: Game;
+}
+
+const GameCardComponent: React.FC<GameCardProps> = ({ game }) => {
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  const checkFavorite = useCallback(async (userId: string, gameId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('game_id', parseInt(gameId))
+        .maybeSingle();
+      
+      if (error) {
+        if (error.code !== 'PGRST116') {
+          console.error('Favorite check error:', error);
+        }
+        setIsFavorite(false);
+        return;
+      }
+      
+      setIsFavorite(!!data);
+    } catch (error) {
+      console.error('Favorite check exception:', error);
+      setIsFavorite(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('ares_discord_user');
+    if (userStr) {
+      setCurrentUser(JSON.parse(userStr));
+      checkFavorite(JSON.parse(userStr).id, game.id);
+    }
+  }, [game.id, checkFavorite]);
+
+  const toggleFavorite = useCallback(async (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    if (!currentUser) {
+      alert('Connect with Discord to save favorites');
+      return;
+    }
+
+    try {
+      if (isFavorite) {
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', currentUser.id)
+          .eq('game_id', parseInt(game.id));
+        
+        if (error) {
+          console.error('Favorite remove error:', error);
+          alert('Failed to remove favorite. Please try again.');
+          return;
+        }
+        
+        setIsFavorite(false);
+      } else {
+        const { error } = await supabase
+          .from('favorites')
+          .insert([{ user_id: currentUser.id, game_id: parseInt(game.id) }]);
+        
+        if (error) {
+          console.error('Favorite add error:', error);
+          alert('Failed to add favorite. Please try again.');
+          return;
+        }
+        
+        setIsFavorite(true);
+      }
+    } catch (error) {
+      console.error('Favorite toggle exception:', error);
+      alert('An error occurred. Please try again.');
+    }
+  }, [currentUser, isFavorite, game.id]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -8 }}
+      className="bg-brand-card rounded-2xl overflow-hidden border border-brand-border hover:border-brand-azure/40 transition-all group shadow-xl"
+    >
+      <Link to={`/game/${game.id}`}>
+        <div className="aspect-[16/9] overflow-hidden relative">
+          <img
+            src={game.bannerImage}
+            alt={game.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/90 via-transparent to-transparent opacity-60" />
+          <button
+            onClick={toggleFavorite}
+            className="absolute top-3 right-3 p-2 bg-black/50 hover:bg-black/70 rounded-full transition-all z-10"
+          >
+            <Heart
+              className={`w-5 h-5 transition-all ${
+                isFavorite ? 'fill-red-500 text-red-500' : 'text-white'
+              }`}
+            />
+          </button>
+        </div>
+        
+        <div className="p-5">
+          <h3 className="font-black text-xl text-white group-hover:text-brand-azure transition-colors mb-2 tracking-tight">
+            {game.title}
+          </h3>
+          
+          <p className="text-gray-500 text-sm line-clamp-2 mb-6 leading-relaxed">
+            {game.description}
+          </p>
+          
+          <div className="flex items-center">
+            <span className="text-[10px] font-black px-2 py-1 bg-brand-border rounded text-gray-400 uppercase tracking-widest">
+              {game.releaseDate}
+            </span>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+};
+
+export const GameCard = memo(GameCardComponent);
