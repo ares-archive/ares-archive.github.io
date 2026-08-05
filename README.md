@@ -19,6 +19,8 @@
 
 </div>
 
+<div align="center">
+
 **Official frontend and main gateway for the ARES Digital Preservation Project**
 
 *A modern, high-performance database dedicated to archiving and safeguarding digital media history.*
@@ -43,7 +45,7 @@ ARES Archive is the primary interface of the **ARES Digital Preservation Project
 
 ## File Structure
 
-```
+```text
 ares-archive/
 ├── .github/
 │   └── workflows/          # CI/CD — Supabase secrets injected at build time
@@ -71,6 +73,7 @@ ares-archive/
 ├── tsconfig.dualite.json
 ├── tsconfig.node.json
 └── vite.config.ts          # Basename removed for root domain deploy
+
 ```
 
 ---
