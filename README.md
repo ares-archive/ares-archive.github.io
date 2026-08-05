@@ -2,7 +2,7 @@
 
 # ARES Archive
 
-<img src="1000094688.png" alt="Logo ARES Archive" width="300" />
+<img src="ARES_1.png" alt="Logo ARES Archive" width="300" />
 
 <br><br>
 
