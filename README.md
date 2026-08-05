@@ -2,6 +2,18 @@
 
 # ARES Archive
 
+<img src="1000094688.png" alt="Logo ARES Archive" width="300" />
+
+<br><br>
+
+<a href="https://discord.gg/sYDe4nv4b4">
+  <img src="https://img.shields.io/badge/Discord-Unisciti%20al%20Server-7289DA?style=for-the-badge&logo=discord&logoColor=white" alt="Unisciti al server Discord di ARES" />
+</a>
+
+<br><br>
+
+</div>
+
 **Official frontend and main gateway for the ARES Digital Preservation Project**
 
 *A modern, high-performance database dedicated to archiving and safeguarding digital media history.*
