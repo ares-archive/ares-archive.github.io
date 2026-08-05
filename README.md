@@ -7,7 +7,7 @@
 <br><br>
 
 <a href="https://discord.gg/sYDe4nv4b4">
-  <img src="https://img.shields.io/badge/Discord-Unisciti%20al%20Server-7289DA?style=for-the-badge&logo=discord&logoColor=white" alt="Unisciti al server Discord di ARES" />
+  <img src="https://img.shields.io/badge/Discord-Join%20our%20Server-7289DA?style=for-the-badge&logo=discord&logoColor=white" alt="Join the ARES Discord Server" />
 </a>
 
 <br><br>
