@@ -9,6 +9,9 @@
 <a href="https://discord.gg/sYDe4nv4b4">
   <img src="https://img.shields.io/badge/Discord-Join%20our%20Server-7289DA?style=for-the-badge&logo=discord&logoColor=white" alt="Join the ARES Discord Server" />
 </a>
+<a href="https://ko-fi.com/aresarchive">
+  <img src="https://img.shields.io/badge/Ko--fi-Support%20us-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white" alt="Support us on Ko-fi" />
+</a>
 
 <br><br>
 
