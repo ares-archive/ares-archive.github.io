@@ -5,7 +5,6 @@
 <img src="ARES_1.png" alt="Logo ARES Archive" width="300" />
 
 ---
-
 <br><br>
 
 <a href="https://discord.gg/sYDe4nv4b4">
@@ -16,7 +15,6 @@
 </a>
 
 <br><br>
-
 ---
 
 </div>
